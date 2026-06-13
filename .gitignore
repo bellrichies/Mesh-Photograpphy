@@ -1,0 +1,32 @@
+# Environment
+.env
+.env.local
+
+# Dependencies
+/vendor/
+/node_modules/
+
+# Runtime storage
+/storage/logs/*.log
+/storage/cache/*
+!/storage/cache/.gitkeep
+/storage/temp/*
+!/storage/temp/.gitkeep
+/storage/private/*
+!/storage/private/.gitkeep
+
+# Uploads generated at runtime
+/public/uploads/*
+!/public/uploads/.gitkeep
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Tooling
+.phpunit.result.cache

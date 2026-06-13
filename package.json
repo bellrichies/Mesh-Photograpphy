@@ -1,0 +1,11 @@
+{
+  "name": "mesh-photography",
+  "private": true,
+  "scripts": {
+    "build:css": "tailwindcss -c tailwind.config.js -i ./resources/css/tailwind.css -o ./public/assets/css/tailwind.css --minify",
+    "watch:css": "tailwindcss -c tailwind.config.js -i ./resources/css/tailwind.css -o ./public/assets/css/tailwind.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "3.4.19"
+  }
+}
