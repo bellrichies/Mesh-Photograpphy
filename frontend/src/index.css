@@ -2,14 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Theme CSS custom properties ─────────────────────────────────────────────
+   Default values are the brand palette. These are overridden at runtime by
+   useTheme() when the admin has configured custom values via Site Settings.
+   ─────────────────────────────────────────────────────────────────────────── */
+:root {
+  --theme-primary:      #C4923B;
+  --theme-secondary:    #FAF9F7;
+  --theme-accent:       #B8860B;
+  --theme-text:         #1A1A1A;
+  --theme-bg:           #FAF9F7;
+  --theme-font-display: 'Cormorant Garamond', Georgia, serif;
+  --theme-font-body:    'Inter', system-ui, sans-serif;
+}
+
 @layer base {
   html {
-    font-family: 'Inter', system-ui, sans-serif;
-    color: #1a1a1a;
-    background-color: #faf9f7;
+    font-family: var(--theme-font-body);
+    color: var(--theme-text);
+    background-color: var(--theme-bg);
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-family: var(--theme-font-display);
   }
 }

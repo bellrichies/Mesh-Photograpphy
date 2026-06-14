@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Instagram, Facebook } from 'lucide-react';
+import { Instagram, Youtube, Mail, Phone, MapPin, Clock, MessageSquare, Calendar, Link2 } from 'lucide-react';
 import type { PublicSettings } from '@/types/models';
 
 interface FooterProps {
@@ -7,113 +8,115 @@ interface FooterProps {
 }
 
 const EXPLORE_LINKS = [
-  ['/portfolio', 'Portfolio'],
-  ['/services',  'Services'],
-  ['/blog',      'Blog'],
-  ['/about',     'About'],
+  ['/portfolio',    'Portfolio'],
+  ['/services',     'Services'],
+  ['/about',        'About'],
+  ['/blog',         'Journal'],
+  ['/contact',      'Contact'],
 ] as const;
 
-const STUDIO_LINKS = [
-  ['/contact', 'Contact'],
-  ['/booking', 'Booking'],
-  ['/privacy-policy', 'Privacy'],
-  ['/terms',   'Terms'],
+const LEGAL_LINKS = [
+  ['/privacy-policy', 'Privacy Policy'],
+  ['/terms',          'Terms of Service'],
+  ['/cookie-policy',  'Cookie Policy'],
 ] as const;
 
 export default function Footer({ settings }: FooterProps) {
-  const siteName = settings?.site.name ?? 'Mesh Photography';
-  const address  = settings?.contact.address;
-  const email    = settings?.contact.email;
-  const phone    = settings?.contact.phone;
-  const ig       = settings?.social.instagram ?? null;
-  const fb       = settings?.social.facebook ?? null;
-  const pinterest = (settings?.social as Record<string, string | null>)?.pinterest ?? null;
+  const [email, setEmail] = useState('');
+
+  const siteName  = settings?.site.name ?? 'Mesh Photography';
+  const tagline   = settings?.site.tagline ?? 'Editorial imagery for modern celebrations, portraits, and brands.';
+  const address   = settings?.contact.address;
+  const emailAddr = settings?.contact.email;
+  const phone     = settings?.contact.phone;
+  const ig        = settings?.social.instagram ?? null;
+  const yt        = settings?.social.youtube ?? null;
+  const pinterest = settings?.social.pinterest ?? null;
+  const logoUrl   = settings?.site.logo_url ?? null;
+
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    setEmail('');
+  };
 
   return (
     <footer className="bg-ink border-t border-charcoal-light">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-12">
-          {/* Brand column */}
-          <div>
-            <span className="font-display text-2xl text-ivory block mb-3">{siteName}</span>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-10">
 
-            {address && (
-              <p className="font-body text-xs text-taupe/60 leading-relaxed mb-4">{address}</p>
+        {/* ── Main grid ─────────────────────────────────────────────────── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8 mb-12">
+
+          {/* Col 1 — Brand + Newsletter + Social */}
+          <div className="sm:col-span-2 lg:col-span-1">
+            <Link to="/" className="inline-flex items-center gap-2.5 mb-4 group">
+              {logoUrl ? (
+                <img
+                  src={logoUrl}
+                  alt={siteName}
+                  className="h-8 w-auto"
+                />
+              ) : (
+                <div className="w-8 h-8 border border-ivory/20 flex items-center justify-center shrink-0">
+                  <span className="font-display text-ivory text-xs">M</span>
+                </div>
+              )}
+              <span className="font-display text-xl text-ivory group-hover:text-bronze transition-colors duration-150">
+                {siteName}
+              </span>
+            </Link>
+
+            {tagline && (
+              <p className="font-body text-xs text-taupe/60 leading-relaxed mb-7 max-w-xs">{tagline}</p>
             )}
-            {email && (
-              <a
-                href={`mailto:${email}`}
-                className="font-body text-xs text-taupe/60 hover:text-ivory transition-colors duration-150 block mb-1"
+
+            {/* Newsletter */}
+            <p className="font-body text-[10px] tracking-[0.15em] uppercase text-taupe mb-3">Stay Inspired</p>
+            <form onSubmit={handleSubscribe} className="flex gap-0 mb-6">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Your email address"
+                aria-label="Email for newsletter"
+                className="flex-1 min-w-0 bg-charcoal-light border border-charcoal-light text-ivory text-xs font-body px-3 py-2.5 placeholder:text-taupe/40 focus:outline-none focus:border-bronze transition-colors"
+              />
+              <button
+                type="submit"
+                className="px-4 py-2.5 bg-bronze text-ivory font-body text-[10px] tracking-[0.1em] uppercase hover:bg-bronze-light transition-colors duration-150 shrink-0"
               >
-                {email}
-              </a>
-            )}
-            {phone && (
-              <a
-                href={`tel:${phone}`}
-                className="font-body text-xs text-taupe/60 hover:text-ivory transition-colors duration-150 block"
-              >
-                {phone}
-              </a>
-            )}
-          </div>
+                Subscribe
+              </button>
+            </form>
 
-          {/* Navigation columns */}
-          <div className="grid grid-cols-2 gap-8">
-            <div>
-              <h4 className="font-body text-xs uppercase tracking-[0.12em] text-taupe mb-4">Explore</h4>
-              <nav aria-label="Footer navigation — explore">
-                {EXPLORE_LINKS.map(([to, label]) => (
-                  <Link
-                    key={to}
-                    to={to}
-                    className="block font-body text-sm text-ivory/50 hover:text-ivory transition-colors duration-150 mb-2"
-                  >
-                    {label}
-                  </Link>
-                ))}
-              </nav>
-            </div>
-            <div>
-              <h4 className="font-body text-xs uppercase tracking-[0.12em] text-taupe mb-4">Studio</h4>
-              <nav aria-label="Footer navigation — studio">
-                {STUDIO_LINKS.map(([to, label]) => (
-                  <Link
-                    key={to}
-                    to={to}
-                    className="block font-body text-sm text-ivory/50 hover:text-ivory transition-colors duration-150 mb-2"
-                  >
-                    {label}
-                  </Link>
-                ))}
-              </nav>
-            </div>
-          </div>
-
-          {/* Social column */}
-          <div>
-            <h4 className="font-body text-xs uppercase tracking-[0.12em] text-taupe mb-4">Follow Along</h4>
-            <div className="flex gap-4">
+            {/* Social icons */}
+            <div className="flex items-center gap-3">
               {ig && (
                 <a
                   href={ig}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Instagram"
-                  className="text-ivory/40 hover:text-bronze transition-colors duration-150"
+                  className="w-8 h-8 border border-charcoal-light flex items-center justify-center text-ivory/40 hover:text-bronze hover:border-bronze transition-colors duration-150"
                 >
-                  <Instagram className="h-5 w-5" />
+                  <Instagram className="h-3.5 w-3.5" />
                 </a>
               )}
-              {fb && (
+              <a
+                href="#"
+                aria-label="Website link"
+                className="w-8 h-8 border border-charcoal-light flex items-center justify-center text-ivory/40 hover:text-bronze hover:border-bronze transition-colors duration-150"
+              >
+                <Link2 className="h-3.5 w-3.5" />
+              </a>
+              {yt && (
                 <a
-                  href={fb}
+                  href={yt}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label="Facebook"
-                  className="text-ivory/40 hover:text-bronze transition-colors duration-150"
+                  aria-label="YouTube"
+                  className="w-8 h-8 border border-charcoal-light flex items-center justify-center text-ivory/40 hover:text-bronze hover:border-bronze transition-colors duration-150"
                 >
-                  <Facebook className="h-5 w-5" />
+                  <Youtube className="h-3.5 w-3.5" />
                 </a>
               )}
               {pinterest && (
@@ -122,34 +125,119 @@ export default function Footer({ settings }: FooterProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Pinterest"
-                  className="text-ivory/40 hover:text-bronze transition-colors duration-150 font-body text-xs"
+                  className="w-8 h-8 border border-charcoal-light flex items-center justify-center text-ivory/40 hover:text-bronze hover:border-bronze transition-colors duration-150"
                 >
-                  Pinterest
+                  <span className="font-body text-[10px]">P</span>
                 </a>
               )}
             </div>
           </div>
+
+          {/* Col 2 — Contact */}
+          <div>
+            <h4 className="font-body text-[10px] tracking-[0.15em] uppercase text-taupe mb-5">Contact</h4>
+            <div className="space-y-4">
+              {emailAddr && (
+                <div className="flex items-start gap-3">
+                  <Mail size={13} className="text-bronze mt-0.5 shrink-0" />
+                  <a
+                    href={`mailto:${emailAddr}`}
+                    className="font-body text-xs text-ivory/60 hover:text-ivory transition-colors duration-150 leading-relaxed"
+                  >
+                    {emailAddr}
+                  </a>
+                </div>
+              )}
+
+              {phone && (
+                <div className="flex items-start gap-3">
+                  <Phone size={13} className="text-bronze mt-0.5 shrink-0" />
+                  <a
+                    href={`tel:${phone}`}
+                    className="font-body text-xs text-ivory/60 hover:text-ivory transition-colors duration-150"
+                  >
+                    {phone}
+                  </a>
+                </div>
+              )}
+
+              {address && (
+                <div className="flex items-start gap-3">
+                  <MapPin size={13} className="text-bronze mt-0.5 shrink-0" />
+                  <p className="font-body text-xs text-ivory/60 leading-relaxed whitespace-pre-line">{address}</p>
+                </div>
+              )}
+
+              <div className="flex items-start gap-3">
+                <Clock size={13} className="text-bronze mt-0.5 shrink-0" />
+                <p className="font-body text-xs text-ivory/60 leading-relaxed">
+                  Monday – Thursday: 10:00 AM – 5:00 PM
+                </p>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <MessageSquare size={13} className="text-bronze mt-0.5 shrink-0" />
+                <Link
+                  to="/contact"
+                  className="font-body text-xs text-ivory/60 hover:text-bronze transition-colors duration-150"
+                >
+                  Start a conversation
+                </Link>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <Calendar size={13} className="text-bronze mt-0.5 shrink-0" />
+                <Link
+                  to="/booking"
+                  className="font-body text-xs text-ivory/60 hover:text-bronze transition-colors duration-150"
+                >
+                  Request availability
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Col 3 — Explore */}
+          <div>
+            <h4 className="font-body text-[10px] tracking-[0.15em] uppercase text-taupe mb-5">Explore</h4>
+            <nav aria-label="Footer navigation — explore">
+              {EXPLORE_LINKS.map(([to, label]) => (
+                <Link
+                  key={to}
+                  to={to}
+                  className="block font-body text-sm text-ivory/50 hover:text-ivory transition-colors duration-150 mb-2.5"
+                >
+                  {label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+
+          {/* Col 4 — Legal */}
+          <div>
+            <h4 className="font-body text-[10px] tracking-[0.15em] uppercase text-taupe mb-5">Legal</h4>
+            <nav aria-label="Footer navigation — legal">
+              {LEGAL_LINKS.map(([to, label]) => (
+                <Link
+                  key={to}
+                  to={to}
+                  className="block font-body text-sm text-ivory/50 hover:text-ivory transition-colors duration-150 mb-2.5"
+                >
+                  {label}
+                </Link>
+              ))}
+            </nav>
+          </div>
         </div>
 
-        {/* Bottom bar */}
+        {/* ── Bottom bar ────────────────────────────────────────────────── */}
         <div className="border-t border-charcoal-light pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="font-body text-xs text-taupe/40">
             &copy; {new Date().getFullYear()} {siteName}. All rights reserved.
           </p>
-          <div className="flex gap-6">
-            <Link
-              to="/privacy-policy"
-              className="font-body text-xs text-taupe/40 hover:text-ivory transition-colors duration-150"
-            >
-              Privacy Policy
-            </Link>
-            <Link
-              to="/terms"
-              className="font-body text-xs text-taupe/40 hover:text-ivory transition-colors duration-150"
-            >
-              Terms of Service
-            </Link>
-          </div>
+          <p className="font-body text-xs text-taupe/30 text-center sm:text-right max-w-sm">
+            Serving couples, founders, and families with calm direction, thoughtful pacing, and imagery designed to feel timeless.
+          </p>
         </div>
       </div>
     </footer>

@@ -14,7 +14,7 @@ const INTERVAL_MS = 6000;
 
 function HeroSkeleton() {
   return (
-    <div className="h-[80vh] min-h-[600px] w-full bg-charcoal-light animate-pulse flex items-end pb-24">
+    <div className="h-[90vh] min-h-[620px] w-full bg-charcoal-light animate-pulse flex items-end pb-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="h-3 w-28 bg-ivory/20 rounded mb-4" />
         <div className="h-14 w-2/3 bg-ivory/20 rounded mb-3" />
@@ -81,7 +81,7 @@ export default function HeroCarousel({ slides, isLoading, siteName }: HeroCarous
   // navbar (which is transparent/ivory-text when not scrolled) stays visible.
   if (!slides.length) {
     return (
-      <section className="relative h-[80vh] min-h-[600px] overflow-hidden bg-espresso flex items-end pb-24 pt-[72px]">
+      <section className="relative h-[90vh] min-h-[620px] overflow-hidden bg-espresso flex items-end pb-24 pt-[72px]">
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-black/55" />
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="max-w-2xl">
@@ -112,7 +112,7 @@ export default function HeroCarousel({ slides, isLoading, siteName }: HeroCarous
 
   return (
     <section
-      className="relative h-[80vh] min-h-[600px] overflow-hidden bg-espresso"
+      className="relative h-[90vh] min-h-[620px] overflow-hidden bg-espresso"
       role="region"
       aria-label="Featured photography"
       aria-roledescription="carousel"

@@ -2,9 +2,12 @@ import { Outlet } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { usePublicSettings } from '@/api/settings';
+import { useTheme } from '@/hooks/useTheme';
 
 export default function PublicLayout() {
   const { data: settings } = usePublicSettings();
+
+  useTheme(settings?.theme);
 
   return (
     <>

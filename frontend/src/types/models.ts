@@ -76,6 +76,20 @@ export interface GalleryMedia extends MediaRecord {
   caption: string | null;
 }
 
+// Minimal photo shape returned by GET /galleries/photos and used by the
+// homepage grid + lightbox. Avoids depending on the heavier MediaRecord type
+// which includes admin-only fields the public API does not return.
+export interface GalleryPhoto {
+  id: number;
+  url: string;
+  thumb_url: string | null;
+  alt_text: string | null;
+  caption: string | null;
+  width: number | null;
+  height: number | null;
+  sort_order: number;
+}
+
 export interface GalleryDetail extends Gallery {
   media: GalleryMedia[];
   seo: SeoMeta;
@@ -224,6 +238,16 @@ export interface BookingRequest {
 
 // ─── Settings ─────────────────────────────────────────────────────────────────
 
+export interface ThemeSettings {
+  primary_color: string;
+  secondary_color: string;
+  accent_color: string;
+  text_color: string;
+  bg_color: string;
+  display_font: string;
+  body_font: string;
+}
+
 export interface PublicSettings {
   site: {
     name: string;
@@ -235,12 +259,14 @@ export interface PublicSettings {
     phone: string | null;
     email: string | null;
     address: string | null;
+    map_embed_url?: string | null;
   };
   social: Record<string, string | null>;
   seo: {
     default_title: string | null;
     default_description: string | null;
   };
+  theme?: ThemeSettings;
 }
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────

@@ -1,7 +1,8 @@
-import { useParams, Navigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import DOMPurify from 'dompurify';
 import PageMeta from '@/components/ui/PageMeta';
 import { useCmsPage } from '@/api/pages';
+import NotFoundPage from '@/pages/public/NotFoundPage';
 
 export default function CmsPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -19,7 +20,7 @@ export default function CmsPage() {
     );
   }
 
-  if (isError || !page) return <Navigate to="/" replace />;
+  if (isError || !page) return <NotFoundPage />;
 
   return (
     <>
