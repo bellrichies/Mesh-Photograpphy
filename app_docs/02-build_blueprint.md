@@ -101,7 +101,7 @@
 
 ### ADR-005: Tailwind CSS Design System Preserved
 
-**Decision:** The Tailwind configuration, color tokens, and typography system defined in `docs/blueprint.md` §21 carry over to the React frontend verbatim.
+**Decision:** The Tailwind configuration, color tokens, and typography system defined in `app_docs/blueprint.md` §21 carry over to the React frontend verbatim.
 
 **Brand tokens (preserved):**
 - Colors: charcoal, ivory, bronze, gold, taupe, sand, pine, espresso, ink, ember, clay
@@ -215,7 +215,7 @@ mesh/
 │   ├── vite.config.ts
 │   └── package.json
 │
-└── docs/                         # All project documentation
+└── app_docs                         # All project documentation
     ├── blueprint.md
     ├── 01-business_requirement_docs.md
     ├── 02-build_blueprint.md

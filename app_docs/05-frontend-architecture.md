@@ -42,7 +42,7 @@ All API communication flows through `src/api/` modules using Axios with JWT Bear
 
 ## 2. Design System
 
-The design system is preserved verbatim from `docs/blueprint.md` §21.
+The design system is preserved verbatim from `app_docs/blueprint.md` §21.
 
 ### Color Tokens (`tailwind.config.ts`)
 

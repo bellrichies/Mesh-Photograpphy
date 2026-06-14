@@ -14,7 +14,9 @@ function PageSpinner() {
 }
 
 // Auth pages
-const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
+const LoginPage          = lazy(() => import('./pages/auth/LoginPage'));
+const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage'));
+const ResetPasswordPage  = lazy(() => import('./pages/auth/ResetPasswordPage'));
 
 // Public pages
 const HomePage          = lazy(() => import('./pages/public/HomePage'));
@@ -31,7 +33,24 @@ const CmsPage           = lazy(() => import('./pages/public/CmsPage'));
 const NotFoundPage      = lazy(() => import('./pages/public/NotFoundPage'));
 
 // Admin pages
-const DashboardPage = lazy(() => import('./pages/admin/DashboardPage'));
+const DashboardPage       = lazy(() => import('./pages/admin/DashboardPage'));
+const GalleriesPage       = lazy(() => import('./pages/admin/GalleriesPage'));
+const GalleryFormPage     = lazy(() => import('./pages/admin/GalleryFormPage'));
+const MediaPage           = lazy(() => import('./pages/admin/MediaPage'));
+const BlogPostsPage       = lazy(() => import('./pages/admin/BlogPostsPage'));
+const BlogPostFormPage    = lazy(() => import('./pages/admin/BlogPostFormPage'));
+const ServicesAdminPage   = lazy(() => import('./pages/admin/ServicesPage'));
+const ServiceFormPage     = lazy(() => import('./pages/admin/ServiceFormPage'));
+const TestimonialsPage    = lazy(() => import('./pages/admin/TestimonialsPage'));
+const HeroSlidesPage      = lazy(() => import('./pages/admin/HeroSlidesPage'));
+const PagesAdminPage      = lazy(() => import('./pages/admin/PagesPage'));
+const InquiriesPage       = lazy(() => import('./pages/admin/InquiriesPage'));
+const InquiryDetailPage   = lazy(() => import('./pages/admin/InquiryDetailPage'));
+const BookingsPage        = lazy(() => import('./pages/admin/BookingsPage'));
+const BookingDetailPage   = lazy(() => import('./pages/admin/BookingDetailPage'));
+const SettingsPage        = lazy(() => import('./pages/admin/SettingsPage'));
+const UsersPage           = lazy(() => import('./pages/admin/UsersPage'));
+const ActivityLogPage     = lazy(() => import('./pages/admin/ActivityLogPage'));
 
 export default function App() {
   return (
@@ -39,7 +58,9 @@ export default function App() {
       <Routes>
         {/* Auth routes */}
         <Route element={<AuthLayout />}>
-          <Route path="/admin/login" element={<LoginPage />} />
+          <Route path="/admin/login"           element={<LoginPage />} />
+          <Route path="/admin/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/admin/reset-password"  element={<ResetPasswordPage />} />
         </Route>
 
         {/* Admin routes — protected */}
@@ -50,18 +71,36 @@ export default function App() {
             </PrivateRoute>
           }
         >
-          <Route path="/admin"              element={<DashboardPage />} />
-          <Route path="/admin/galleries"    element={<DashboardPage />} />
-          <Route path="/admin/blog"         element={<DashboardPage />} />
-          <Route path="/admin/media"        element={<DashboardPage />} />
-          <Route path="/admin/pages"        element={<DashboardPage />} />
-          <Route path="/admin/services"     element={<DashboardPage />} />
-          <Route path="/admin/testimonials" element={<DashboardPage />} />
-          <Route path="/admin/hero-slides"  element={<DashboardPage />} />
-          <Route path="/admin/inquiries"    element={<DashboardPage />} />
-          <Route path="/admin/bookings"     element={<DashboardPage />} />
-          <Route path="/admin/settings"     element={<DashboardPage />} />
-          <Route path="/admin/users"        element={<DashboardPage />} />
+          <Route path="/admin"                        element={<DashboardPage />} />
+
+          <Route path="/admin/galleries"              element={<GalleriesPage />} />
+          <Route path="/admin/galleries/new"          element={<GalleryFormPage />} />
+          <Route path="/admin/galleries/:id/edit"     element={<GalleryFormPage />} />
+
+          <Route path="/admin/blog"                   element={<BlogPostsPage />} />
+          <Route path="/admin/blog/new"               element={<BlogPostFormPage />} />
+          <Route path="/admin/blog/:id/edit"          element={<BlogPostFormPage />} />
+
+          <Route path="/admin/media"                  element={<MediaPage />} />
+
+          <Route path="/admin/pages"                  element={<PagesAdminPage />} />
+
+          <Route path="/admin/services"               element={<ServicesAdminPage />} />
+          <Route path="/admin/services/new"           element={<ServiceFormPage />} />
+          <Route path="/admin/services/:id/edit"      element={<ServiceFormPage />} />
+
+          <Route path="/admin/testimonials"           element={<TestimonialsPage />} />
+          <Route path="/admin/hero-slides"            element={<HeroSlidesPage />} />
+
+          <Route path="/admin/inquiries"              element={<InquiriesPage />} />
+          <Route path="/admin/inquiries/:id"          element={<InquiryDetailPage />} />
+
+          <Route path="/admin/bookings"               element={<BookingsPage />} />
+          <Route path="/admin/bookings/:id"           element={<BookingDetailPage />} />
+
+          <Route path="/admin/settings"               element={<SettingsPage />} />
+          <Route path="/admin/users"                  element={<UsersPage />} />
+          <Route path="/admin/activity-log"           element={<ActivityLogPage />} />
         </Route>
 
         {/* Public routes */}

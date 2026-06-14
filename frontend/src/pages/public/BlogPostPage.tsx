@@ -1,6 +1,7 @@
 import { useParams, Link, Navigate } from 'react-router-dom';
-import { Calendar, User, ArrowLeft, ArrowRight, ChevronLeft } from 'lucide-react';
+import { Calendar, User, ArrowLeft, ArrowRight, ChevronLeft, Twitter, Linkedin, Link2 } from 'lucide-react';
 import DOMPurify from 'dompurify';
+import toast from 'react-hot-toast';
 import PageMeta from '@/components/ui/PageMeta';
 import { useBlogPost } from '@/api/blog';
 
@@ -23,7 +24,19 @@ export default function BlogPostPage() {
 
   if (isError || !post) return <Navigate to="/blog" replace />;
 
-  const safeBody = DOMPurify.sanitize(post.body ?? '');
+  const safeBody  = DOMPurify.sanitize(post.body ?? '');
+  const pageUrl   = typeof window !== 'undefined' ? window.location.href : '';
+  const shareText = encodeURIComponent(post.title);
+  const shareUrl  = encodeURIComponent(pageUrl);
+
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(pageUrl);
+      toast.success('Link copied!');
+    } catch {
+      toast.error('Could not copy link');
+    }
+  };
 
   return (
     <>
@@ -112,6 +125,37 @@ export default function BlogPostPage() {
               ))}
             </div>
           )}
+
+          {/* Social sharing */}
+          <div className="flex items-center gap-3 mt-10 pt-8 border-t border-cream">
+            <span className="font-body text-xs text-taupe uppercase tracking-widest">Share</span>
+            <a
+              href={`https://twitter.com/intent/tweet?text=${shareText}&url=${shareUrl}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2 rounded-full border border-cream text-taupe hover:text-bronze hover:border-bronze transition-colors"
+              aria-label="Share on X / Twitter"
+            >
+              <Twitter size={15} />
+            </a>
+            <a
+              href={`https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2 rounded-full border border-cream text-taupe hover:text-bronze hover:border-bronze transition-colors"
+              aria-label="Share on LinkedIn"
+            >
+              <Linkedin size={15} />
+            </a>
+            <button
+              type="button"
+              onClick={copyLink}
+              className="p-2 rounded-full border border-cream text-taupe hover:text-bronze hover:border-bronze transition-colors"
+              aria-label="Copy link"
+            >
+              <Link2 size={15} />
+            </button>
+          </div>
 
           {/* Prev / Next */}
           {(post.prev_post || post.next_post) && (

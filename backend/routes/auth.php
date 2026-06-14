@@ -12,4 +12,8 @@ return function (Router $router): void {
            ->middleware([JwtMiddleware::class]);
     $router->get('/api/v1/auth/me',       'Auth\AuthController@me')
            ->middleware([JwtMiddleware::class]);
+
+    // Password reset (no auth required)
+    $router->post('/api/v1/auth/password/request', 'Auth\PasswordResetController@request');
+    $router->post('/api/v1/auth/password/reset',   'Auth\PasswordResetController@reset');
 };

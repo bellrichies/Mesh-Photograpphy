@@ -4,7 +4,7 @@ import { useAuth } from '@/store/AuthContext';
 import {
   LayoutDashboard, Images, FileText, Image, Layers, Star,
   SlidersHorizontal, MessageSquare, Calendar, Settings, Users,
-  Menu, X, LogOut, ChevronRight,
+  Menu, X, LogOut, ChevronRight, ClipboardList,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 
@@ -28,6 +28,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Bookings', to: '/admin/bookings', icon: <Calendar size={18} />, permission: 'manage-inquiries' },
   { label: 'Settings', to: '/admin/settings', icon: <Settings size={18} />, permission: 'manage-settings' },
   { label: 'Users', to: '/admin/users', icon: <Users size={18} />, permission: 'manage-users' },
+  { label: 'Activity Log', to: '/admin/activity-log', icon: <ClipboardList size={18} /> },
 ];
 
 export default function AdminLayout() {

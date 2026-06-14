@@ -9,6 +9,8 @@ interface OptimizedImageProps {
   loading?: 'lazy' | 'eager';
   fetchPriority?: 'high' | 'low' | 'auto';
   objectFit?: 'cover' | 'contain' | 'fill';
+  srcSet?: string;
+  sizes?: string;
 }
 
 export default function OptimizedImage({
@@ -20,6 +22,8 @@ export default function OptimizedImage({
   loading = 'lazy',
   fetchPriority = 'auto',
   objectFit = 'cover',
+  srcSet,
+  sizes,
 }: OptimizedImageProps) {
   return (
     <img
@@ -30,6 +34,8 @@ export default function OptimizedImage({
       loading={loading}
       fetchPriority={fetchPriority}
       decoding="async"
+      srcSet={srcSet}
+      sizes={sizes ?? (srcSet ? '(max-width: 640px) 320px, (max-width: 1280px) 640px, 1280px' : undefined)}
       className={cn('object-' + objectFit, className)}
     />
   );

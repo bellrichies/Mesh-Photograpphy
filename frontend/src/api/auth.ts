@@ -34,4 +34,14 @@ export const authApi = {
     apiClient
       .get<ApiResponse<AdminUser>>('/auth/me')
       .then((res) => res.data),
+
+  requestPasswordReset: (email: string) =>
+    apiClient
+      .post<ApiResponse<null>>('/auth/password/request', { email })
+      .then((res) => res.data),
+
+  resetPassword: (token: string, password: string) =>
+    apiClient
+      .post<ApiResponse<null>>('/auth/password/reset', { token, password })
+      .then((res) => res.data),
 };

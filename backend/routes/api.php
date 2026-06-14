@@ -44,4 +44,10 @@ return function (Router $router): void {
 
     // Sitemap
     $router->get('/api/v1/sitemap', 'Api\SeoController@sitemap');
+
+    // Blog RSS feed
+    $router->get('/api/v1/blog/feed.xml', 'Api\RssFeedController@feed');
+
+    // Blog archive (month/year groupings)
+    $router->get('/api/v1/blog/archive', 'Api\BlogController@archive');
 };

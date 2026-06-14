@@ -3,7 +3,7 @@
 > **Version:** 1.0  
 > **Date:** 2026-06-14  
 > **Status:** Approved for Implementation  
-> **Source of Truth:** `docs/blueprint.md`
+> **Source of Truth:** `app_docs/blueprint.md`
 
 ---
 
@@ -376,7 +376,7 @@ The brand positions itself at the high-end of the market — weddings, portraits
 
 - Backend: PSR-4 autoloading, strict types, clean architecture layers (Controller → Service → Repository → Model)
 - Frontend: Component-driven architecture, TypeScript, consistent naming conventions
-- Documentation: In-code comments for non-obvious decisions only; architecture documented in `/docs`
+- Documentation: In-code comments for non-obvious decisions only; architecture documented in `/app_docs`
 - Test coverage: Unit tests for services/validators; integration tests for API endpoints; E2E for critical flows
 
 ### 5.7 Usability (Admin)

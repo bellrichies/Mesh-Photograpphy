@@ -12,7 +12,8 @@ class BlogPost
 
     public function findPublished(array $filters = [], int $page = 1, int $perPage = 10): array
     {
-        $where  = ['bp.deleted_at IS NULL', 'bp.is_published = 1'];
+        // Include explicitly published AND scheduled posts whose publish time has arrived
+        $where  = ['bp.deleted_at IS NULL', '(bp.is_published = 1 OR (bp.published_at IS NOT NULL AND bp.published_at <= NOW()))'];
         $params = [];
 
         if (!empty($filters['category'])) {
@@ -112,7 +113,7 @@ class BlogPost
         )->fetch() ?: null;
     }
 
-    public function getTags(int $postId): array
+    public function getTagsForPost(int $postId): array
     {
         return $this->db->query(
             'SELECT bt.id, bt.name, bt.slug

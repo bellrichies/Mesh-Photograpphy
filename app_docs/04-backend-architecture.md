@@ -744,7 +744,7 @@ All models receive `Database $db` via constructor. Methods return arrays (not ob
 
 ## 11. Database Schema
 
-The full schema is defined in `docs/blueprint.md` §11. Key additions for the API architecture:
+The full schema is defined in `app_docsblueprint.md` §11. Key additions for the API architecture:
 
 ### `user_refresh_tokens` (New)
 

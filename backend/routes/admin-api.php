@@ -163,4 +163,20 @@ return function (Router $router): void {
     // Slug check utility
     $router->get('/api/v1/admin/slug-check', 'Admin\SlugController@check')
            ->middleware($jwt);
+
+    // Blog post revisions
+    $router->get('/api/v1/admin/blog/posts/{id}/revisions',                      'Admin\BlogRevisionController@index')
+           ->middleware($perm('manage-blog'));
+    $router->get('/api/v1/admin/blog/posts/{id}/revisions/{revisionId}',         'Admin\BlogRevisionController@show')
+           ->middleware($perm('manage-blog'));
+    $router->post('/api/v1/admin/blog/posts/{id}/revisions/{revisionId}/restore','Admin\BlogRevisionController@restore')
+           ->middleware($perm('manage-blog'));
+
+    // Activity log
+    $router->get('/api/v1/admin/activity-logs', 'Admin\ActivityLogController@index')
+           ->middleware($jwt);
+
+    // Inquiry CSV export
+    $router->get('/api/v1/admin/inquiries/export', 'Admin\InquiryController@export')
+           ->middleware($perm('manage-inquiries'));
 };

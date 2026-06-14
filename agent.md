@@ -343,11 +343,11 @@ Read these before implementing a feature:
 
 | What | Where |
 |---|---|
-| Full DB schema (36 tables) | `docs/blueprint.md` §3–§14 |
-| All API endpoints with request/response shapes | `docs/06-api-design.md` |
-| PHP backend architecture + all code stubs | `docs/04-backend-architecture.md` |
-| React architecture + all component stubs | `docs/05-frontend-architecture.md` |
-| Homepage design spec (sections, components, a11y) | `docs/homepage.md` |
-| Implementation task list | `docs/07-implementation-plan.md` |
-| Full backend implementation prompt | `docs/prompts/backend.md` |
-| Full frontend implementation prompt | `docs/prompts/frontend.md` |
+| Full DB schema (36 tables) | `app_docs/blueprint.md` §3–§14 |
+| All API endpoints with request/response shapes | `app_docs/06-api-design.md` |
+| PHP backend architecture + all code stubs | `app_docs/04-backend-architecture.md` |
+| React architecture + all component stubs | `app_docs/05-frontend-architecture.md` |
+| Homepage design spec (sections, components, a11y) | `app_docs/homepage.md` |
+| Implementation task list | `app_docs/07-implementation-plan.md` |
+| Full backend implementation prompt | `app_docs/prompts/backend.md` |
+| Full frontend implementation prompt | `app_docs/prompts/frontend.md` |

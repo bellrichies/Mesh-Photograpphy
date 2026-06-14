@@ -36,7 +36,32 @@ class ContactController extends Controller
         }
 
         $this->service->create($data, $request->ip());
+        $this->notifyAdmin($data);
 
         return $this->success(null, 'Your message has been received. We\'ll be in touch soon!', 201);
+    }
+
+    private function notifyAdmin(array $data): void
+    {
+        $adminEmail = $_ENV['ADMIN_EMAIL'] ?? $_ENV['MAIL_FROM'] ?? '';
+        if (!$adminEmail) return;
+
+        $siteName = $_ENV['APP_NAME'] ?? 'Mesh Photography';
+        $from     = $data['name'] ?? 'Unknown';
+        $email    = $data['email'] ?? '';
+        $subject  = $data['subject'] ?? '(no subject)';
+        $message  = $data['message'] ?? '';
+
+        $body = "New contact inquiry via {$siteName}:\n\n"
+            . "From:    {$from} <{$email}>\n"
+            . "Subject: {$subject}\n\n"
+            . "Message:\n{$message}\n";
+
+        @mail(
+            $adminEmail,
+            "[{$siteName}] New inquiry from {$from}",
+            $body,
+            "From: {$siteName} <{$adminEmail}>\r\nContent-Type: text/plain; charset=UTF-8"
+        );
     }
 }

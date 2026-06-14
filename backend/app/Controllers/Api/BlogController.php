@@ -120,4 +120,27 @@ class BlogController extends Controller
             $this->paginate($result['items'], $result['total'], $page, $perPage)
         );
     }
+
+    public function archive(Request $request, Response $response): Response
+    {
+        $db   = app_database();
+        $rows = $db->query(
+            'SELECT YEAR(published_at) AS year, MONTH(published_at) AS month,
+                    COUNT(*) AS post_count
+             FROM blog_posts
+             WHERE deleted_at IS NULL
+               AND (is_published = 1 OR (published_at IS NOT NULL AND published_at <= NOW()))
+             GROUP BY YEAR(published_at), MONTH(published_at)
+             ORDER BY year DESC, month DESC'
+        )->fetchAll();
+
+        $archive = array_map(fn(array $r) => [
+            'year'       => (int) $r['year'],
+            'month'      => (int) $r['month'],
+            'post_count' => (int) $r['post_count'],
+            'label'      => date('F Y', mktime(0, 0, 0, (int) $r['month'], 1, (int) $r['year'])),
+        ], $rows);
+
+        return $this->success($archive);
+    }
 }

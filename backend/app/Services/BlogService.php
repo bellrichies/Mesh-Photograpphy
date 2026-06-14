@@ -31,7 +31,7 @@ class BlogService
         $row = $this->model->findBySlug($slug);
         if (!$row) return null;
 
-        $tags    = $this->model->getTags((int) $row['id']);
+        $tags    = $this->model->getTagsForPost((int) $row['id']);
         $related = $this->model->getRelated((int) $row['id'], $row['cat_id'] ? (int) $row['cat_id'] : null);
         $appUrl  = rtrim($_ENV['APP_URL'] ?? '', '/');
 

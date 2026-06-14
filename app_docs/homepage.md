@@ -5,7 +5,7 @@
 > **Date:** 2026-06-14  
 > **Route:** `/`  
 > **Component:** `src/pages/public/HomePage.tsx`  
-> **Design System:** `docs/blueprint.md` §21 · `docs/05-frontend-architecture.md` §2
+> **Design System:** `app_docs/blueprint.md` §21 · `app_docs/05-frontend-architecture.md` §2
 
 ---
 
@@ -137,13 +137,13 @@ The CTA section at 90% is intentionally positioned after the full trust-building
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
-│  [LOGO]          Portfolio  Services  Blog  About  Contact   [Book]  │  ← Navbar, h: 72px
+│  [LOGO]          Portfolio  Services  Blog  About  Contact   [Book]  │  ← Navbar, h: 72px [transparent header]
 ├──────────────────────────────────────────────────────────────────────┤
 │                                                                      │
 │                                                                      │
 │         ┌────────────────────────────────────────────────┐           │
 │         │                                                │           │
-│         │              HERO IMAGE                        │           │  ← 100vh
+│         │              HERO IMAGE                        │           │  ← 90vh
 │         │                                                │           │
 │         │   ╔══════════════════════════╗                 │           │
 │         │   ║  Display Heading         ║                 │           │
@@ -151,42 +151,39 @@ The CTA section at 90% is intentionally positioned after the full trust-building
 │         │   ║  [View Portfolio] [Book] ║                 │           │
 │         │   ╚══════════════════════════╝                 │           │
 │         │                                                │           │
-│         │  ● ● ● ● ●   [◄] [❚❚] [►]                      │            │
+│         │                 ● ● ● ● ●                      │           │
 │         └────────────────────────────────────────────────┘           │
 ├──────────────────────────────────────────────────────────────────────┤
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐│  
+│  │  IMAGE   │  │  IMAGE   │  │  IMAGE   │  │  IMAGE   │  │  IMAGE   ││  
+│  │    +     │  │    +     │  │    +     │  │    +     │  │    +     ││   ← Portfolio Grid with l
+│  │          │  │          │  │          │  │          │  │          ││     ightbox photo feature
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘  └──────────┘│
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐│ 
+│  │  IMAGE   │  │  IMAGE   │  │  IMAGE   │  │  IMAGE   │  │  IMAGE   ││
+│  │     +    │  │    +     │  │    +     │  │    +     │  │    +     ││
+│  │          │  │          │  │          │  │          │  │          ││
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘  └──────────┘│
+├──────────────────────────────────────────────────────────────────────┤
 │                                                                      │
-│              "Capturing the moments that matter most in grid."        │  ← Brand Intro, py-24
+│              "Capturing the moments that matter most in grid."       │  ← Brand Intro, py-24
 │           A line of warm brand copy, centered, no more than          │
 │           two sentences. Space around it breathes.                   │
 │                                                                      │
 ├──────────────────────────────────────────────────────────────────────┤
-│  Portfolio                                     View all galleries →  │
-│                                                                      │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐              │  ← Portfolio Grid
-│  │  IMAGE   │  │  IMAGE   │  │  IMAGE   │  │  IMAGE   │              │
-│  │          │  │          │  │          │  │          │              │
-│  │          │  │          │  │          │  │          │              │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘              │
-│  Title         Title         Title         Title                     │
-│  Wedding       Portrait      Commercial    Elopement                 │
-│                                                                      │
-│  ┌──────────┐  ┌──────────┐                                          │
-│  │  IMAGE   │  │  IMAGE   │                                          │
-│  └──────────┘  └──────────┘                                          │
-├──────────────────────────────────────────────────────────────────────┤
-│  Services                                                            │
+│  Our Services                                                        │
 │                                                                      │
 │  ┌────────────────────┐  ┌────────────────────┐  ┌──────────────┐    │  ← Services
-│  │  [icon]  Wedding   │  │  [icon]  Portrait  │  │  [icon] Comm.│    │
-│  │  From $2,500       │  │  From $800         │  │  On enquiry  │    │
+│  │  [image]           │  │  [image]           │  │ [image]      │    │
+|  |                    |  |                    |  |              |    |
+│  │  Wedding           │  │  Portrait          │  │  Family      │    │
 │  │  Short desc...     │  │  Short desc...     │  │  Short desc  │    │
-│  │  [Learn more]      │  │  [Learn more]      │  │  [Learn more]│    │
 │  └────────────────────┘  └────────────────────┘  └──────────────┘    │
 ├──────────────────────────────────────────────────────────────────────┤
 │                                                                      │
-│  ┌──────────────────────────────────────────────────────────────┐    │  ← Testimonials
+│  ┌──────────────────────────────────────────────────────────────┐    │  
 │  │  "Quote text spanning the width with generous                │    │
-│  │   leading and elegant serif type…"                           │    │
+│  │   leading and elegant serif type…"                           │    │  ← Testimonials
 │  │                      — Client Name, Wedding 2026             │    │
 │  └──────────────────────────────────────────────────────────────┘    │
 │                      ● ○ ○   [◄] [►]                                 │
@@ -423,8 +420,8 @@ Cross-fade (opacity), not slide. A sliding transition fights with the already-st
 Bottom-right quadrant of the hero:
 
 ```
-●  ●  ●  ●  ●       [◄]  [❚❚]  [►]
-Dot indicators      Prev, Pause, Next
+●  ●  ●  ●  ●      
+Dot indicators     
 ```
 
 All controls at minimum 44×44px touch target. Color:
