@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
   useAdminUsers,
+  useAdminRoles,
   useCreateUser,
   useUpdateUser,
   useDeleteUser,
@@ -42,6 +43,19 @@ function UserModal({ user, onClose }: { user?: AdminUser; onClose: () => void })
   const isEdit    = !!user;
   const createMut = useCreateUser();
   const updateMut = useUpdateUser(user?.id ?? 0);
+  const { data: allRoles } = useAdminRoles();
+
+  // Track selected role IDs separately (not in RHF since it's a multi-select).
+  // Initialise from the user's existing roles once the roles list is available.
+  const resolvedRoleIds =
+    allRoles && user
+      ? allRoles.filter((r) => user.roles.includes(r.name)).map((r) => r.id)
+      : [];
+
+  const [roleIds, setRoleIds] = useState<number[]>(resolvedRoleIds);
+
+  const toggleRole = (id: number) =>
+    setRoleIds((prev) => prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]);
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } =
     useForm<CreateValues | EditValues>({
@@ -62,6 +76,7 @@ function UserModal({ user, onClose }: { user?: AdminUser; onClose: () => void })
           first_name: values.first_name,
           last_name:  values.last_name,
           status:     values.status,
+          role_ids:   roleIds,
           ...(values.password ? { password: values.password } : {}),
         };
         await updateMut.mutateAsync(payload);
@@ -74,6 +89,7 @@ function UserModal({ user, onClose }: { user?: AdminUser; onClose: () => void })
           last_name:  v.last_name,
           password:   v.password,
           status:     v.status,
+          role_ids:   roleIds,
         });
         toast.success('User created.');
       }
@@ -86,7 +102,7 @@ function UserModal({ user, onClose }: { user?: AdminUser; onClose: () => void })
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-soft w-full max-w-md p-6">
+      <div className="relative bg-white rounded-2xl shadow-soft w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
         <h2 className="font-display text-xl text-charcoal mb-5">{isEdit ? 'Edit' : 'New'} User</h2>
         <form onSubmit={handleSubmit(onSubmit as never)} className="space-y-4">
           {!isEdit && (
@@ -114,6 +130,34 @@ function UserModal({ user, onClose }: { user?: AdminUser; onClose: () => void })
               <option value="inactive">Inactive</option>
             </select>
           </FormField>
+
+          {/* Role selection */}
+          {allRoles && allRoles.length > 0 && (
+            <FormField label="Role" htmlFor="roles" hint="Assign one or more roles to this user.">
+              <div className="flex flex-wrap gap-2 mt-1">
+                {allRoles.map((role) => (
+                  <label
+                    key={role.id}
+                    className="flex items-center gap-2 cursor-pointer font-body text-sm text-charcoal"
+                  >
+                    <input
+                      type="checkbox"
+                      className="rounded border-cream accent-bronze"
+                      checked={roleIds.includes(role.id)}
+                      onChange={() => toggleRole(role.id)}
+                    />
+                    <span className="capitalize">{role.name}</span>
+                    {role.description && (
+                      <span className="text-taupe text-xs">— {role.description}</span>
+                    )}
+                  </label>
+                ))}
+              </div>
+              {roleIds.length === 0 && (
+                <p className="mt-1 text-xs text-taupe font-body">No role assigned — user will have minimal access.</p>
+              )}
+            </FormField>
+          )}
 
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-body text-charcoal border border-cream rounded-lg hover:bg-ivory-warm">Cancel</button>

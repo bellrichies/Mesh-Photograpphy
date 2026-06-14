@@ -45,7 +45,7 @@ class UserController extends Controller
 
         $hash = password_hash($data['password'], PASSWORD_BCRYPT);
         $db->query(
-            'INSERT INTO users (email, first_name, last_name, password_hash, status, created_at, updated_at)
+            'INSERT INTO users (email, first_name, last_name, password, status, created_at, updated_at)
              VALUES (?,?,?,?,\'active\',NOW(),NOW())',
             [$data['email'], $data['first_name'], $data['last_name'], $hash]
         );
@@ -77,7 +77,7 @@ class UserController extends Controller
         $params = [$data['first_name'] ?? '', $data['last_name'] ?? '', $data['status'] ?? 'active'];
 
         if (!empty($data['password'])) {
-            $sets[]   = 'password_hash=?';
+            $sets[]   = 'password=?';
             $params[] = password_hash($data['password'], PASSWORD_BCRYPT);
         }
 
@@ -94,6 +94,19 @@ class UserController extends Controller
         $row = $db->query('SELECT u.*, GROUP_CONCAT(DISTINCT r.name SEPARATOR \',\') AS roles FROM users u LEFT JOIN user_roles ur ON u.id=ur.user_id LEFT JOIN roles r ON ur.role_id=r.id WHERE u.id=? GROUP BY u.id', [$id])->fetch();
 
         return $this->success($this->formatRow($row));
+    }
+
+    public function roles(Request $request, Response $response): Response
+    {
+        $rows = app_database()->query(
+            'SELECT id, name, description FROM roles ORDER BY name ASC'
+        )->fetchAll();
+
+        return $this->success(array_map(fn($r) => [
+            'id'          => (int)$r['id'],
+            'name'        => $r['name'],
+            'description' => $r['description'] ?? null,
+        ], $rows));
     }
 
     public function destroy(Request $request, Response $response): Response
@@ -118,14 +131,14 @@ class UserController extends Controller
     {
         $roles = $row['roles'] ? explode(',', $row['roles']) : [];
         return [
-            'id'           => (int)$row['id'],
-            'email'        => $row['email'],
-            'first_name'   => $row['first_name'],
-            'last_name'    => $row['last_name'],
-            'roles'        => $roles,
-            'status'       => $row['status'] ?? 'active',
-            'last_login_at'=> $row['last_login_at'] ?? null,
-            'created_at'   => $row['created_at'],
+            'id'            => (int)$row['id'],
+            'email'         => $row['email'],
+            'first_name'    => $row['first_name'],
+            'last_name'     => $row['last_name'],
+            'roles'         => $roles,
+            'status'        => $row['status'] ?? 'active',
+            'last_login_at' => $row['last_login_at'] ?? null,
+            'created_at'    => $row['created_at'],
         ];
     }
 }

@@ -12,10 +12,28 @@ export interface AdminUserPayload {
   role_ids?: number[];
 }
 
+export interface AdminRole {
+  id: number;
+  name: string;
+  description: string | null;
+}
+
 export const adminUserKeys = {
-  all:  () => ['admin', 'users'] as const,
-  list: () => [...adminUserKeys.all(), 'list'] as const,
+  all:   () => ['admin', 'users'] as const,
+  list:  () => [...adminUserKeys.all(), 'list'] as const,
+  roles: () => ['admin', 'roles'] as const,
 };
+
+export function useAdminRoles() {
+  return useQuery({
+    queryKey: adminUserKeys.roles(),
+    queryFn:  async () => {
+      const res = await apiClient.get<ApiResponse<AdminRole[]>>('/admin/roles');
+      return res.data.data;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+}
 
 export function useAdminUsers() {
   return useQuery({

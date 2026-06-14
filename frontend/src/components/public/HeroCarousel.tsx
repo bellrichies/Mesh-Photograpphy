@@ -1,37 +1,70 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Pause, Play } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import type { HeroSlide } from '@/types/models';
 
 interface HeroCarouselProps {
   slides: HeroSlide[];
+  isLoading?: boolean;
+  siteName?: string;
 }
 
-const INTERVAL = 6000;
+const INTERVAL_MS = 6000;
 
-export default function HeroCarousel({ slides }: HeroCarouselProps) {
-  const [current, setCurrent]   = useState(0);
-  const [paused, setPaused]     = useState(false);
-  const [fading, setFading]     = useState(false);
-  const timerRef                = useRef<ReturnType<typeof setTimeout>>();
+function HeroSkeleton() {
+  return (
+    <div className="h-[80vh] min-h-[600px] w-full bg-charcoal-light animate-pulse flex items-end pb-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div className="h-3 w-28 bg-ivory/20 rounded mb-4" />
+        <div className="h-14 w-2/3 bg-ivory/20 rounded mb-3" />
+        <div className="h-14 w-1/2 bg-ivory/20 rounded mb-8" />
+        <div className="flex gap-4">
+          <div className="h-11 w-40 bg-ivory/20 rounded" />
+          <div className="h-11 w-32 bg-ivory/10 rounded" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function HeroCarousel({ slides, isLoading, siteName }: HeroCarouselProps) {
+  const prefersReducedMotion =
+    typeof window !== 'undefined'
+      ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      : false;
+
+  const [current, setCurrent] = useState(0);
+  const [manualPause, setManualPause] = useState(prefersReducedMotion);
+  const [hoverPause, setHoverPause] = useState(false);
+  const [fading, setFading] = useState(false);
+
+  const isPaused = manualPause || hoverPause;
 
   const go = useCallback((index: number) => {
     setFading(true);
     setTimeout(() => {
       setCurrent(index);
       setFading(false);
-    }, 300);
+    }, 400);
   }, []);
 
-  const prev = useCallback(() => go((current - 1 + slides.length) % slides.length), [current, go, slides.length]);
-  const next = useCallback(() => go((current + 1) % slides.length), [current, go, slides.length]);
+  const prev = useCallback(
+    () => go((current - 1 + slides.length) % slides.length),
+    [current, go, slides.length]
+  );
+  const next = useCallback(
+    () => go((current + 1) % slides.length),
+    [current, go, slides.length]
+  );
 
   useEffect(() => {
-    if (slides.length <= 1 || paused) return;
-    timerRef.current = setTimeout(next, INTERVAL);
-    return () => clearTimeout(timerRef.current);
-  }, [current, paused, next, slides.length]);
+    if (slides.length <= 1 || isPaused) return;
+    const timer = setInterval(() => {
+      setCurrent((c) => (c + 1) % slides.length);
+    }, INTERVAL_MS);
+    return () => clearInterval(timer);
+  }, [isPaused, slides.length]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -42,20 +75,57 @@ export default function HeroCarousel({ slides }: HeroCarouselProps) {
     return () => window.removeEventListener('keydown', onKey);
   }, [prev, next]);
 
-  if (slides.length === 0) return null;
+  if (isLoading) return <HeroSkeleton />;
+
+  // No slides configured or API unreachable — render a fallback dark hero so the
+  // navbar (which is transparent/ivory-text when not scrolled) stays visible.
+  if (!slides.length) {
+    return (
+      <section className="relative h-[80vh] min-h-[600px] overflow-hidden bg-espresso flex items-end pb-24 pt-[72px]">
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-black/55" />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          <div className="max-w-2xl">
+            <h1 className="font-display text-5xl lg:text-7xl text-ivory font-light leading-tight mb-6">
+              {siteName ?? 'Mesh Photography'}
+            </h1>
+            <div className="flex flex-wrap gap-4">
+              <Link
+                to="/portfolio"
+                className="px-8 py-3 bg-bronze text-ivory font-body text-sm tracking-wide hover:bg-bronze-light transition-colors duration-150"
+              >
+                View Portfolio
+              </Link>
+              <Link
+                to="/contact"
+                className="px-8 py-3 border border-ivory/60 text-ivory font-body text-sm tracking-wide hover:border-ivory hover:bg-ivory/10 transition-colors duration-150"
+              >
+                Get in Touch
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   const slide = slides[current];
 
   return (
     <section
-      className="relative h-[90vh] min-h-[600px] overflow-hidden bg-espresso"
+      className="relative h-[80vh] min-h-[600px] overflow-hidden bg-espresso"
+      role="region"
+      aria-label="Featured photography"
       aria-roledescription="carousel"
-      aria-label="Hero slideshow"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
+      onMouseEnter={() => setHoverPause(true)}
+      onMouseLeave={() => setHoverPause(false)}
     >
       {/* Background */}
-      <div className={cn('absolute inset-0 transition-opacity duration-300', fading ? 'opacity-0' : 'opacity-100')}>
+      <div
+        className={cn(
+          'absolute inset-0 transition-opacity duration-700 ease-in-out',
+          fading ? 'opacity-0' : 'opacity-100'
+        )}
+      >
         {slide.background_image ? (
           <img
             src={slide.background_image.url}
@@ -63,77 +133,87 @@ export default function HeroCarousel({ slides }: HeroCarouselProps) {
             width={1920}
             height={1080}
             loading="eager"
-            fetchPriority="high"
+            fetchpriority="high"
             decoding="async"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover object-center"
           />
         ) : (
           <div className="w-full h-full bg-espresso" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-b from-espresso/30 via-espresso/20 to-espresso/60" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-black/55" />
       </div>
 
-      {/* Content */}
+      {/* Content — bottom-left on desktop, bottom-center on mobile */}
       <div
         className={cn(
-          'relative z-10 h-full flex flex-col items-center justify-center text-center px-6 transition-opacity duration-300',
+          'relative z-10 flex h-full items-end pb-24 lg:pb-20 pt-[72px] transition-opacity duration-500 ease-in-out',
           fading ? 'opacity-0' : 'opacity-100'
         )}
-        aria-live="polite"
-        aria-atomic="true"
       >
-        <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl text-ivory font-light tracking-wide max-w-3xl leading-tight">
-          {slide.title}
-        </h1>
-        {slide.subtitle && (
-          <p className="font-body text-lg text-ivory/80 mt-4 max-w-xl">{slide.subtitle}</p>
-        )}
-        {slide.cta_label && slide.cta_url && (
-          <Link
-            to={slide.cta_url}
-            className="mt-8 inline-block px-8 py-3 border border-ivory text-ivory font-body text-sm tracking-widest uppercase hover:bg-ivory hover:text-charcoal transition-colors duration-200"
-          >
-            {slide.cta_label}
-          </Link>
-        )}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          <div className="max-w-2xl">
+            {slide.subtitle && (
+              <p className="font-body text-sm tracking-[0.2em] uppercase text-gold mb-4 opacity-90">
+                {slide.subtitle}
+              </p>
+            )}
+            <h1 className="font-display text-5xl lg:text-7xl text-ivory font-light leading-tight mb-6">
+              {slide.title}
+            </h1>
+            <div className="flex flex-wrap gap-4">
+              {slide.cta_label && slide.cta_url && (
+                <Link
+                  to={slide.cta_url}
+                  className="px-8 py-3 bg-bronze text-ivory font-body text-sm tracking-wide hover:bg-bronze-light transition-colors duration-150"
+                >
+                  {slide.cta_label}
+                </Link>
+              )}
+              <Link
+                to="/contact"
+                className="px-8 py-3 border border-ivory/60 text-ivory font-body text-sm tracking-wide hover:border-ivory hover:bg-ivory/10 transition-colors duration-150"
+              >
+                Get in Touch
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Prev / Next */}
+      {/* Carousel controls — dot indicators + pause/play only (no arrows) */}
       {slides.length > 1 && (
         <>
-          <button
-            onClick={prev}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 text-ivory/60 hover:text-ivory transition-colors bg-espresso/30 rounded-full p-2"
-            aria-label="Previous slide"
-          >
-            <ChevronLeft size={28} />
-          </button>
-          <button
-            onClick={next}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 text-ivory/60 hover:text-ivory transition-colors bg-espresso/30 rounded-full p-2"
-            aria-label="Next slide"
-          >
-            <ChevronRight size={28} />
-          </button>
-
-          {/* Dots */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20" role="tablist">
-            {slides.map((_, i) => (
+          <div className="absolute bottom-7 left-1/2 -translate-x-1/2 z-20 flex items-center gap-4">
+            <div className="flex gap-2">
+              {slides.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => go(i)}
+                  aria-label={`Go to slide ${i + 1}`}
+                  aria-current={i === current ? 'true' : undefined}
+                  className={cn(
+                    'h-1.5 rounded-full transition-all duration-300',
+                    i === current ? 'w-8 bg-ivory' : 'w-2 bg-ivory/40 hover:bg-ivory/70'
+                  )}
+                />
+              ))}
+            </div>
+            {!prefersReducedMotion && (
               <button
-                key={i}
-                role="tab"
-                aria-selected={i === current}
-                aria-label={`Slide ${i + 1}`}
-                onClick={() => go(i)}
-                className={cn(
-                  'h-1.5 rounded-full transition-all duration-300',
-                  i === current ? 'w-8 bg-ivory' : 'w-2 bg-ivory/40 hover:bg-ivory/70'
-                )}
-              />
-            ))}
+                onClick={() => setManualPause((v) => !v)}
+                aria-label={manualPause ? 'Resume carousel' : 'Pause carousel'}
+                className="p-1.5 text-ivory/60 hover:text-ivory transition-colors"
+              >
+                {manualPause ? <Play size={13} /> : <Pause size={13} />}
+              </button>
+            )}
           </div>
         </>
       )}
+
+      <div aria-live="polite" className="sr-only">
+        {slide.title}
+      </div>
     </section>
   );
 }

@@ -8,6 +8,7 @@ import {
   useAdminGallery,
   useCreateGallery,
   useUpdateGallery,
+  useAttachGalleryMedia,
   useRemoveGalleryMedia,
   type AdminGalleryPayload,
 } from '@/api/admin/galleries';
@@ -17,7 +18,7 @@ import SlugInput from '@/components/admin/SlugInput';
 import SeoPanel from '@/components/admin/SeoPanel';
 import MediaPicker from '@/components/admin/MediaPicker';
 import { getErrorMessage } from '@/utils/api-errors';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Plus, GripVertical } from 'lucide-react';
 import type { MediaRecord } from '@/types/models';
 
 const schema = z.object({
@@ -43,9 +44,13 @@ export default function GalleryFormPage() {
   const { data: gallery }  = useAdminGallery(galleryId);
   const createMutation     = useCreateGallery();
   const updateMutation     = useUpdateGallery(galleryId);
+  const attachMedia        = useAttachGalleryMedia(galleryId);
   const removeMedia        = useRemoveGalleryMedia(galleryId);
 
   const [cover, setCover] = useState<MediaRecord | null>(null);
+  const [addingImage, setAddingImage] = useState(false);
+  // Caption editor state: mediaId -> caption string
+  const [captions, setCaptions] = useState<Record<number, string>>({});
 
   const {
     register,
@@ -112,7 +117,27 @@ export default function GalleryFormPage() {
     }
   };
 
-  const galleryMedia = (gallery as { media?: MediaRecord[] } | undefined)?.media ?? [];
+  const handleAddImage = async (media: MediaRecord | null) => {
+    if (!media) return;
+    setAddingImage(false);
+    try {
+      await attachMedia.mutateAsync({ media_id: media.id, caption: '' });
+      toast.success('Image added.');
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    }
+  };
+
+  const handleRemoveImage = async (mediaId: number) => {
+    try {
+      await removeMedia.mutateAsync(mediaId);
+      toast.success('Image removed.');
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    }
+  };
+
+  const galleryMedia = (gallery as { media?: (MediaRecord & { sort_order: number; caption: string | null })[] } | undefined)?.media ?? [];
 
   return (
     <div className="max-w-3xl">
@@ -154,13 +179,7 @@ export default function GalleryFormPage() {
           </FormField>
 
           <FormField label="Sort Order" htmlFor="sort_order" hint="Lower numbers appear first.">
-            <input
-              id="sort_order"
-              type="number"
-              min={0}
-              className={fieldClass(false)}
-              {...register('sort_order')}
-            />
+            <input id="sort_order" type="number" min={0} className={fieldClass(false)} {...register('sort_order')} />
           </FormField>
 
           <div className="flex items-center gap-6">
@@ -180,41 +199,98 @@ export default function GalleryFormPage() {
           <MediaPicker value={cover} onChange={setCover} label="Select cover image" />
         </div>
 
-        {isEdit && galleryMedia.length > 0 && (
+        {/* Gallery images — only visible in edit mode (need gallery ID for attachment) */}
+        {isEdit && (
           <div className="bg-white rounded-xl border border-cream p-6">
-            <h2 className="font-display text-lg text-charcoal mb-4">
-              Gallery Images ({galleryMedia.length})
-            </h2>
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-              {galleryMedia.map((m) => (
-                <div key={m.id} className="relative group aspect-square rounded-lg overflow-hidden border border-cream">
-                  <img
-                    src={m.thumb_url ?? m.url}
-                    alt={m.alt_text ?? ''}
-                    className="w-full h-full object-cover"
-                    width={120}
-                    height={120}
-                    loading="lazy"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeMedia.mutate(m.id)}
-                    className="absolute top-1 right-1 p-1 bg-red-600 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                    aria-label="Remove image"
-                  >
-                    <Trash2 size={12} />
-                  </button>
-                </div>
-              ))}
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-display text-lg text-charcoal">
+                Gallery Images {galleryMedia.length > 0 && `(${galleryMedia.length})`}
+              </h2>
+              <button
+                type="button"
+                onClick={() => setAddingImage(true)}
+                disabled={attachMedia.isPending}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-body bg-bronze text-ivory rounded-lg hover:bg-bronze-light disabled:opacity-60"
+              >
+                <Plus size={13} /> Add Image
+              </button>
             </div>
+
+            {galleryMedia.length === 0 ? (
+              <div className="border-2 border-dashed border-cream rounded-lg py-10 text-center">
+                <p className="font-body text-sm text-taupe">No images yet. Click "Add Image" to start building this gallery.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {galleryMedia.map((m) => (
+                  <div
+                    key={m.id}
+                    className="relative group border border-cream rounded-lg overflow-hidden"
+                  >
+                    <div className="aspect-square">
+                      <img
+                        src={m.thumb_url ?? m.url}
+                        alt={m.alt_text ?? ''}
+                        className="w-full h-full object-cover"
+                        width={200}
+                        height={200}
+                        loading="lazy"
+                      />
+                    </div>
+                    <div className="absolute top-1.5 left-1.5 p-1 cursor-grab opacity-0 group-hover:opacity-100 transition-opacity text-ivory bg-black/40 rounded">
+                      <GripVertical size={12} />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveImage(m.id)}
+                      className="absolute top-1.5 right-1.5 p-1 bg-red-600 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                      aria-label="Remove image"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                    {/* Caption */}
+                    <div className="p-2 bg-ivory-warm border-t border-cream">
+                      <input
+                        type="text"
+                        placeholder="Caption (optional)"
+                        value={captions[m.id] ?? m.caption ?? ''}
+                        onChange={(e) => setCaptions((prev) => ({ ...prev, [m.id]: e.target.value }))}
+                        className="w-full text-xs font-body text-charcoal bg-transparent border-none outline-none placeholder:text-taupe"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Inline MediaPicker modal for adding images */}
+            {addingImage && (
+              <div className="mt-4">
+                <MediaPicker
+                  value={null}
+                  onChange={handleAddImage}
+                  label="Select image to add"
+                />
+                <button
+                  type="button"
+                  onClick={() => setAddingImage(false)}
+                  className="mt-2 text-xs font-body text-taupe hover:text-charcoal"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
           </div>
         )}
 
+        {!isEdit && (
+          <p className="text-xs font-body text-taupe px-1">
+            Save the gallery first, then you can add images from the edit page.
+          </p>
+        )}
+
         <div className="bg-white rounded-xl border border-cream p-6">
-          <SeoPanel
-            register={register}
-            errors={errors}
-          />
+          <SeoPanel register={register} errors={errors} />
         </div>
 
         <div className="flex justify-end gap-3">

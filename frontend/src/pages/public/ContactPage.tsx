@@ -35,9 +35,10 @@ export default function ContactPage() {
     }
   }
 
-  const phone   = settings?.contact.phone;
-  const email   = settings?.contact.email;
-  const address = settings?.contact.address;
+  const phone       = settings?.contact.phone;
+  const email       = settings?.contact.email;
+  const address     = settings?.contact.address;
+  const mapEmbedUrl = (settings?.contact as Record<string, string | null | undefined> | undefined)?.map_embed_url ?? null;
 
   return (
     <>
@@ -188,6 +189,22 @@ export default function ContactPage() {
               </div>
             </div>
           </div>
+
+          {/* Google Map embed */}
+          {mapEmbedUrl && (
+            <div className="mt-16">
+              <div className="relative w-full overflow-hidden rounded-xl" style={{ paddingTop: '40%', minHeight: '300px' }}>
+                <iframe
+                  title="Studio location map"
+                  src={mapEmbedUrl}
+                  className="absolute inset-0 w-full h-full border-0"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  allowFullScreen
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </>

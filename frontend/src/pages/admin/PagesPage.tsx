@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
   useAdminPages,
+  useAdminPage,
   useCreatePage,
   useUpdatePage,
   useDeletePage,
@@ -18,11 +19,13 @@ import StatusBadge from '@/components/admin/StatusBadge';
 import ConfirmDialog from '@/components/admin/ConfirmDialog';
 import FormField, { fieldClass } from '@/components/admin/FormField';
 import SlugInput from '@/components/admin/SlugInput';
+import RichTextEditor from '@/components/admin/RichTextEditor';
 import { getErrorMessage } from '@/utils/api-errors';
 
 const schema = z.object({
   title:           z.string().min(1, 'Title is required'),
   slug:            z.string().min(1, 'Slug is required'),
+  body:            z.string().optional(),
   template:        z.string().optional(),
   is_published:    z.enum(['true', 'false']),
   seo_title:       z.string().optional(),
@@ -36,18 +39,31 @@ function PageFormModal({ page, onClose }: { page?: AdminPage; onClose: () => voi
   const createMut = useCreatePage();
   const updateMut = useUpdatePage(page?.id ?? 0);
 
+  // Load full page data (including body) when editing
+  const { data: fullPage } = useAdminPage(page?.id ?? 0);
+
+  const existingBody = fullPage?.sections?.[0]?.content ?? '';
+
   const { register, handleSubmit, control, setValue, watch, formState: { errors, isSubmitting } } =
     useForm<FormValues>({
       resolver: zodResolver(schema),
       defaultValues: {
         title:           page?.title                    ?? '',
         slug:            page?.slug                     ?? '',
+        body:            '',
         template:        page?.template                 ?? '',
         is_published:    (page?.status === 'published' ? 'true' : 'false') as 'true' | 'false',
         seo_title:       page?.seo?.meta_title          ?? '',
         seo_description: page?.seo?.meta_description    ?? '',
       },
     });
+
+  // Sync body once full page data loads
+  const [bodyReady, setBodyReady] = useState(false);
+  if (isEdit && fullPage && !bodyReady) {
+    setValue('body', existingBody);
+    setBodyReady(true);
+  }
 
   const title = watch('title');
   const slug  = watch('slug');
@@ -62,6 +78,7 @@ function PageFormModal({ page, onClose }: { page?: AdminPage; onClose: () => voi
     const payload: AdminPagePayload = {
       title:           values.title,
       slug:            values.slug,
+      body:            values.body || null,
       template:        values.template || null,
       is_published:    values.is_published === 'true',
       seo_title:       values.seo_title       || null,
@@ -77,7 +94,7 @@ function PageFormModal({ page, onClose }: { page?: AdminPage; onClose: () => voi
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-soft w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+      <div className="relative bg-white rounded-2xl shadow-soft w-full max-w-2xl p-6 max-h-[92vh] overflow-y-auto">
         <h2 className="font-display text-xl text-charcoal mb-5">{isEdit ? 'Edit' : 'New'} Page</h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <FormField label="Title" htmlFor="title" error={errors.title?.message} required>
@@ -99,6 +116,21 @@ function PageFormModal({ page, onClose }: { page?: AdminPage; onClose: () => voi
                   onChange={field.onChange}
                   type="page"
                   exceptId={isEdit ? page?.id : undefined}
+                />
+              )}
+            />
+          </FormField>
+
+          <FormField label="Body / Content" htmlFor="body" hint="Rich-text content displayed on the page.">
+            <Controller
+              name="body"
+              control={control}
+              render={({ field }) => (
+                <RichTextEditor
+                  value={field.value ?? ''}
+                  onChange={field.onChange}
+                  placeholder="Write the page content here…"
+                  minHeight={250}
                 />
               )}
             />

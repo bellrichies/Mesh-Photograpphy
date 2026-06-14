@@ -21,6 +21,7 @@ import FormField, { fieldClass } from '@/components/admin/FormField';
 import SlugInput from '@/components/admin/SlugInput';
 import SeoPanel from '@/components/admin/SeoPanel';
 import MediaPicker from '@/components/admin/MediaPicker';
+import RichTextEditor from '@/components/admin/RichTextEditor';
 import ConfirmDialog from '@/components/admin/ConfirmDialog';
 import { getErrorMessage } from '@/utils/api-errors';
 import type { MediaRecord } from '@/types/models';
@@ -253,12 +254,21 @@ export default function BlogPostFormPage() {
           </div>
 
           <div className="bg-white rounded-xl border border-cream p-6">
-            <h2 className="font-display text-lg text-charcoal mb-4">Body</h2>
-            <p className="text-xs text-taupe font-body mb-2">Enter HTML content. Autosaves every 30 seconds.</p>
-            <textarea
-              className={fieldClass(false)}
-              rows={20}
-              {...register('body')}
+            <h2 className="font-display text-lg text-charcoal mb-1">Body</h2>
+            <p className="text-xs text-taupe font-body mb-3">Rich text content. Autosaves every 30 seconds when editing.</p>
+            <Controller
+              name="body"
+              control={control}
+              render={({ field }) => (
+                <RichTextEditor
+                  value={field.value ?? ''}
+                  onChange={(html) => {
+                    field.onChange(html);
+                  }}
+                  placeholder="Write your post content here…"
+                  minHeight={400}
+                />
+              )}
             />
           </div>
 

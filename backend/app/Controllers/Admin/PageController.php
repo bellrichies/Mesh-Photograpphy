@@ -14,7 +14,7 @@ class PageController extends Controller
     public function index(Request $request, Response $response): Response
     {
         $rows = app_database()->query(
-            'SELECT id, title, slug, template, is_published, created_at, updated_at
+            'SELECT id, title, slug, is_published, created_at, updated_at
              FROM pages WHERE deleted_at IS NULL ORDER BY title ASC'
         )->fetchAll();
 
@@ -28,21 +28,17 @@ class PageController extends Controller
         $row = $db->query('SELECT * FROM pages WHERE id=? AND deleted_at IS NULL LIMIT 1', [$id])->fetch();
         if (!$row) throw new HttpException(404, 'Page not found.');
 
-        $sections = $db->query(
-            'SELECT id, section_type, title, content, settings, sort_order FROM page_sections
-             WHERE page_id=? ORDER BY sort_order ASC',
-            [$id]
-        )->fetchAll();
-
         $data = $this->formatRow($row);
-        $data['sections'] = array_map(fn($s) => [
-            'id'           => (int)$s['id'],
-            'section_type' => $s['section_type'],
-            'title'        => $s['title'] ?? null,
-            'content'      => $s['content'] ?? null,
-            'settings'     => $s['settings'] ? json_decode($s['settings'], true) : [],
-            'sort_order'   => (int)$s['sort_order'],
-        ], $sections);
+        $data['sections'] = [
+            [
+                'id'           => 1,
+                'section_type' => 'rich_text',
+                'title'        => null,
+                'content'      => $row['body'] ?? null,
+                'settings'     => (object) [],
+                'sort_order'   => 0,
+            ],
+        ];
         $data['seo_title']       = $row['seo_title']       ?? null;
         $data['seo_description'] = $row['seo_description'] ?? null;
 
@@ -61,12 +57,12 @@ class PageController extends Controller
         }
 
         $db->query(
-            'INSERT INTO pages (title, slug, template, is_published, seo_title, seo_description, created_at, updated_at)
+            'INSERT INTO pages (title, slug, body, is_published, seo_title, seo_description, created_at, updated_at)
              VALUES (?,?,?,?,?,?,NOW(),NOW())',
             [
                 $data['title'],
                 $data['slug'],
-                $data['template']        ?? null,
+                $data['body'] ?? null,
                 !empty($data['is_published']) ? 1 : 0,
                 $data['seo_title']       ?? null,
                 $data['seo_description'] ?? null,
@@ -95,11 +91,11 @@ class PageController extends Controller
         }
 
         $db->query(
-            'UPDATE pages SET title=?,slug=?,template=?,is_published=?,seo_title=?,seo_description=?,updated_at=NOW() WHERE id=?',
+            'UPDATE pages SET title=?,slug=?,body=?,is_published=?,seo_title=?,seo_description=?,updated_at=NOW() WHERE id=?',
             [
                 $data['title'],
                 $data['slug'],
-                $data['template']        ?? null,
+                $data['body'] ?? (!empty($data['sections'][0]['content']) ? $data['sections'][0]['content'] : null),
                 !empty($data['is_published']) ? 1 : 0,
                 $data['seo_title']       ?? null,
                 $data['seo_description'] ?? null,
@@ -125,13 +121,13 @@ class PageController extends Controller
     private function formatRow(array $row): array
     {
         return [
-            'id'           => (int)$row['id'],
-            'title'        => $row['title'],
-            'slug'         => $row['slug'],
-            'template'     => $row['template']     ?? null,
-            'status'       => $row['is_published'] ? 'published' : 'draft',
-            'created_at'   => $row['created_at'],
-            'updated_at'   => $row['updated_at'],
+            'id'         => (int)$row['id'],
+            'title'      => $row['title'],
+            'slug'       => $row['slug'],
+            'template'   => null,
+            'status'     => $row['is_published'] ? 'published' : 'draft',
+            'created_at' => $row['created_at'],
+            'updated_at' => $row['updated_at'],
         ];
     }
 }

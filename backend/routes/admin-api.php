@@ -151,13 +151,15 @@ return function (Router $router): void {
            ->middleware($perm('manage-pages'));
 
     // Users
-    $router->get('/api/v1/admin/users',         'Admin\UserController@index')
+    $router->get('/api/v1/admin/roles',          'Admin\UserController@roles')
            ->middleware($perm('manage-users'));
-    $router->post('/api/v1/admin/users',        'Admin\UserController@store')
+    $router->get('/api/v1/admin/users',          'Admin\UserController@index')
            ->middleware($perm('manage-users'));
-    $router->put('/api/v1/admin/users/{id}',    'Admin\UserController@update')
+    $router->post('/api/v1/admin/users',         'Admin\UserController@store')
            ->middleware($perm('manage-users'));
-    $router->delete('/api/v1/admin/users/{id}', 'Admin\UserController@destroy')
+    $router->put('/api/v1/admin/users/{id}',     'Admin\UserController@update')
+           ->middleware($perm('manage-users'));
+    $router->delete('/api/v1/admin/users/{id}',  'Admin\UserController@destroy')
            ->middleware($perm('manage-users'));
 
     // Slug check utility

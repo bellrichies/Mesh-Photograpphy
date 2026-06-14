@@ -10,6 +10,7 @@ import FormField, { fieldClass } from '@/components/admin/FormField';
 import SlugInput from '@/components/admin/SlugInput';
 import SeoPanel from '@/components/admin/SeoPanel';
 import MediaPicker from '@/components/admin/MediaPicker';
+import RichTextEditor from '@/components/admin/RichTextEditor';
 import { getErrorMessage } from '@/utils/api-errors';
 import type { MediaRecord } from '@/types/models';
 
@@ -39,7 +40,7 @@ export default function ServiceFormPage() {
   const [cover, setCover] = useState<MediaRecord | null>(null);
 
   const { register, handleSubmit, control, setValue, watch, formState: { errors, isSubmitting } } =
-    useForm<FormValues>({ resolver: zodResolver(schema), defaultValues: { title: '', slug: '', is_published: false, sort_order: 0 } });
+    useForm<FormValues>({ resolver: zodResolver(schema), defaultValues: { title: '', slug: '', is_published: false, sort_order: 0, description: '' } });
 
   useEffect(() => {
     if (service) {
@@ -94,8 +95,19 @@ export default function ServiceFormPage() {
           <FormField label="Short Description" htmlFor="short_description" hint="Shown on the services index page.">
             <textarea id="short_description" rows={2} className={fieldClass(false)} {...register('short_description')} />
           </FormField>
-          <FormField label="Full Description" htmlFor="description">
-            <textarea id="description" rows={6} className={fieldClass(false)} {...register('description')} />
+          <FormField label="Full Description" htmlFor="description" hint="Shown on the service detail page. Supports rich formatting.">
+            <Controller
+              name="description"
+              control={control}
+              render={({ field }) => (
+                <RichTextEditor
+                  value={field.value ?? ''}
+                  onChange={field.onChange}
+                  placeholder="Describe this service in detail…"
+                  minHeight={250}
+                />
+              )}
+            />
           </FormField>
           <FormField label="Price Display" htmlFor="price_display" hint='e.g. "Starting from $800"'>
             <input id="price_display" type="text" className={fieldClass(false)} {...register('price_display')} />

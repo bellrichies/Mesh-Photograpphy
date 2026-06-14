@@ -7,6 +7,7 @@ export interface AdminPagePayload {
   title: string;
   slug: string;
   template?: string | null;
+  body?: string | null;
   is_published: boolean;
   seo_title?: string | null;
   seo_description?: string | null;
