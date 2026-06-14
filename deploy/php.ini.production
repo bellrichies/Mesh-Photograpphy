@@ -1,0 +1,47 @@
+; Mesh Photography — PHP production settings
+; Merge into /etc/php/8.2/apache2/php.ini (or the relevant SAPI ini)
+; After editing: systemctl reload apache2
+
+; ── Error reporting ──────────────────────────────────────────────────────────
+display_errors       = Off
+display_startup_errors = Off
+log_errors           = On
+error_log            = /var/www/meshphoto/backend/storage/logs/php-error.log
+error_reporting      = E_ALL & ~E_DEPRECATED & ~E_STRICT
+
+; ── OPcache ──────────────────────────────────────────────────────────────────
+opcache.enable                 = 1
+opcache.enable_cli             = 0
+opcache.memory_consumption     = 128       ; MB — increase to 256 if > 5k classes
+opcache.interned_strings_buffer = 16
+opcache.max_accelerated_files  = 10000
+opcache.revalidate_freq        = 60        ; seconds; set to 0 on shared hosts
+opcache.validate_timestamps    = 0         ; disable on production for max speed
+opcache.save_comments          = 1         ; required by some annotations/docblocks
+opcache.fast_shutdown          = 1
+
+; ── File uploads ─────────────────────────────────────────────────────────────
+file_uploads         = On
+upload_max_filesize  = 12M
+post_max_size        = 13M
+max_file_uploads     = 5
+
+; ── Execution limits ─────────────────────────────────────────────────────────
+max_execution_time   = 60
+max_input_time       = 60
+memory_limit         = 256M
+
+; ── Session ──────────────────────────────────────────────────────────────────
+session.cookie_secure   = 1
+session.cookie_httponly = 1
+session.cookie_samesite = Strict
+session.use_strict_mode = 1
+session.gc_maxlifetime  = 1440
+
+; ── Security ─────────────────────────────────────────────────────────────────
+expose_php           = Off
+allow_url_fopen      = Off
+allow_url_include    = Off
+
+; ── Date / time ──────────────────────────────────────────────────────────────
+date.timezone        = UTC

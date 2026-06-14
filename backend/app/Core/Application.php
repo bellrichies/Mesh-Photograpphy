@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Core;
 
 use App\Core\Middleware\CorsMiddleware;
+use App\Core\Middleware\SecurityHeadersMiddleware;
 use Throwable;
 
 class Application
@@ -25,18 +26,13 @@ class Application
     public function run(): void
     {
         try {
-            // CORS middleware runs globally before any routing
-            $corsMiddleware = new CorsMiddleware();
-            $corsResponse = null;
+            $cors     = new CorsMiddleware();
+            $security = new SecurityHeadersMiddleware();
 
-            // Handle CORS and potentially return early for OPTIONS
-            $corsResult = $corsMiddleware->handle($this->request, function (Request $req): Response {
-                return $this->router->dispatch($req);
-            });
-
-            $corsResult->send();
+            $cors->handle($this->request, function (Request $req) use ($security): Response {
+                return $security->handle($req, fn (Request $r): Response => $this->router->dispatch($r));
+            })->send();
         } catch (Throwable $e) {
-            // Ensure CORS headers are set on error responses too
             $this->applyCorsHeaders();
             $this->errorHandler->handle($e)->send();
         }

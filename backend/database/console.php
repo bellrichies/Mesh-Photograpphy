@@ -140,6 +140,7 @@ if (!$command) {
     echo "  php database/console.php seed:admin\n";
     echo "  php database/console.php seed:core-cms\n";
     echo "  php database/console.php seed:all\n";
+    echo "  php database/console.php seed:production\n";
     exit(0);
 }
 
@@ -158,6 +159,7 @@ try {
             runSeeder($pdo, $basePath, 'AdminUserSeeder',         'AdminUserSeeder.php');
             runSeeder($pdo, $basePath, 'CoreCmsSeeder',           'CoreCmsSeeder.php');
         })(),
+        'seed:production'          => runSeeder($pdo, $basePath, 'ProductionSeeder', 'ProductionSeeder.php'),
         default => (function () use ($command): void {
             echo "Unknown command: {$command}\n";
             exit(1);

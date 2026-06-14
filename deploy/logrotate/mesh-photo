@@ -1,0 +1,31 @@
+# Mesh Photography — log rotation (PL-13)
+# Install: copy to /etc/logrotate.d/mesh-photo
+# Test:    logrotate -d /etc/logrotate.d/mesh-photo
+
+/var/www/meshphoto/backend/storage/logs/*.log {
+    daily
+    missingok
+    rotate 30
+    compress
+    delaycompress
+    notifempty
+    create 0640 www-data www-data
+    sharedscripts
+
+    postrotate
+        # Reload Apache so it re-opens its log handles
+        if /usr/bin/systemctl is-active --quiet apache2; then
+            /usr/bin/systemctl reload apache2
+        fi
+    endscript
+}
+
+/var/log/meshphoto-backup.log {
+    weekly
+    missingok
+    rotate 8
+    compress
+    delaycompress
+    notifempty
+    create 0640 root root
+}
