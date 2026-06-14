@@ -1,0 +1,2 @@
+{"timestamp":"2026-06-14T06:49:56+00:00","level":"error","exception":"Error","message":"Class \"Api\\HealthController\" not found","file":"D:\\mesh-photo\\backend\\app\\Core\\Router.php","line":121,"method":"GET","path":"/api/v1/health","ip":"::1"}
+{"timestamp":"2026-06-14T06:50:11+00:00","level":"error","exception":"Error","message":"Class \"Api\\HealthController\" not found","file":"D:\\mesh-photo\\backend\\app\\Core\\Router.php","line":121,"method":"GET","path":"/api/v1/health","ip":"::1"}
