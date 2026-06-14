@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useForm, Controller } from 'react-hook-form';
@@ -58,12 +58,14 @@ function PageFormModal({ page, onClose }: { page?: AdminPage; onClose: () => voi
       },
     });
 
-  // Sync body once full page data loads
+  // Sync body once full page data loads (must be in useEffect to avoid setState-during-render)
   const [bodyReady, setBodyReady] = useState(false);
-  if (isEdit && fullPage && !bodyReady) {
-    setValue('body', existingBody);
-    setBodyReady(true);
-  }
+  useEffect(() => {
+    if (isEdit && fullPage && !bodyReady) {
+      setValue('body', existingBody);
+      setBodyReady(true);
+    }
+  }, [isEdit, fullPage, existingBody, bodyReady, setValue]);
 
   const title = watch('title');
   const slug  = watch('slug');

@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/utils/cn';
 
@@ -43,12 +44,11 @@ export default function Pagination({
         {pages.map((p, i) => {
           const prev = pages[i - 1];
           return (
-            <>
+            <Fragment key={p}>
               {prev && p - prev > 1 && (
-                <span key={`gap-${p}`} className="px-1 text-taupe">…</span>
+                <span className="px-1 text-taupe">…</span>
               )}
               <button
-                key={p}
                 onClick={() => onPageChange(p)}
                 className={cn(
                   'w-8 h-8 rounded text-sm transition-colors',
@@ -59,7 +59,7 @@ export default function Pagination({
               >
                 {p}
               </button>
-            </>
+            </Fragment>
           );
         })}
 

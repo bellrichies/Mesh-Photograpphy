@@ -169,12 +169,14 @@ export default function MediaPage() {
           ) : (
             <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3">
               {data?.data.map((m) => (
-                <button
+                <div
                   key={m.id}
-                  type="button"
+                  role="button"
+                  tabIndex={0}
                   onClick={() => setSelected(m)}
+                  onKeyDown={(e) => e.key === 'Enter' && setSelected(m)}
                   className={cn(
-                    'relative aspect-square rounded-lg overflow-hidden border-2 group transition-all',
+                    'relative aspect-square rounded-lg overflow-hidden border-2 group transition-all cursor-pointer',
                     selected?.id === m.id ? 'border-bronze' : 'border-transparent hover:border-bronze/40'
                   )}
                 >
@@ -199,7 +201,7 @@ export default function MediaPage() {
                       <Trash2 size={12} />
                     </button>
                   </div>
-                </button>
+                </div>
               ))}
             </div>
           )}
