@@ -56,7 +56,7 @@ export default function GalleriesPage() {
     {
       key: 'category',
       header: 'Category',
-      render: (g) => g.category ?? <span className="text-taupe text-xs">—</span>,
+      render: (g) => g.category ?? <span className="text-taupe text-xs">-</span>,
     },
     {
       key: 'media',
@@ -114,10 +114,13 @@ export default function GalleriesPage() {
         <div className="relative max-w-xs">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-taupe" />
           <input
-            type="text"
+            id="admin-gallery-search"
+            name="admin_gallery_search"
+            type="search"
+            autoComplete="search"
             value={q}
             onChange={(e) => { setQ(e.target.value); setPage(1); }}
-            placeholder="Search galleries…"
+            placeholder="Search galleries..."
             className="w-full pl-9 pr-3 py-2 border border-cream rounded-lg text-sm font-body focus:outline-none focus:ring-2 focus:ring-bronze"
           />
         </div>

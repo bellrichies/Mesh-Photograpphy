@@ -40,9 +40,12 @@ class SettingsController extends Controller
             'social' => [
                 'instagram' => $raw['social_instagram'] ?? '',
                 'facebook'  => $raw['social_facebook']  ?? '',
-                'twitter'   => $raw['social_twitter']   ?? '',
+                'twitter'   => $raw['social_x'] ?? $raw['social_twitter'] ?? '',
+                'x'         => $raw['social_x'] ?? $raw['social_twitter'] ?? '',
                 'youtube'   => $raw['social_youtube']   ?? '',
                 'pinterest' => $raw['social_pinterest'] ?? '',
+                'linkedin'  => $raw['social_linkedin']  ?? '',
+                'tiktok'    => $raw['social_tiktok']    ?? '',
             ],
             'seo' => [
                 'default_title'       => $raw['seo_default_title']       ?? $raw['default_seo_title']       ?? '',
@@ -88,6 +91,12 @@ class SettingsController extends Controller
                 // Validate theme font values against allowlist
                 if ($group === 'theme' && in_array($key, $allowedFontKeys, true)) {
                     if (!in_array($value, $allowedFonts, true)) {
+                        continue;
+                    }
+                }
+
+                if ($this->isUrlField((string) $group, (string) $key) && $value !== '') {
+                    if (!filter_var($value, FILTER_VALIDATE_URL)) {
                         continue;
                     }
                 }
@@ -139,8 +148,11 @@ class SettingsController extends Controller
             'social.instagram'        => 'social_instagram',
             'social.facebook'         => 'social_facebook',
             'social.twitter'          => 'social_twitter',
+            'social.x'                => 'social_x',
             'social.pinterest'        => 'social_pinterest',
             'social.youtube'          => 'social_youtube',
+            'social.linkedin'         => 'social_linkedin',
+            'social.tiktok'           => 'social_tiktok',
             'seo.default_title'       => 'default_seo_title',
             'seo.default_description' => 'default_seo_description',
             // Theme keys are stored prefixed to avoid collisions
@@ -154,5 +166,18 @@ class SettingsController extends Controller
         ];
 
         return $map["{$group}.{$key}"] ?? $key;
+    }
+
+    private function isUrlField(string $group, string $key): bool
+    {
+        if ($group === 'social') {
+            return true;
+        }
+
+        return in_array("{$group}.{$key}", [
+            'site.logo_url',
+            'site.favicon_url',
+            'contact.map_embed_url',
+        ], true);
     }
 }

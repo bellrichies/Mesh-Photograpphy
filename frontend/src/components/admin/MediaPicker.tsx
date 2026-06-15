@@ -90,7 +90,10 @@ export default function MediaPicker({ value, onChange, label = 'Select Image' }:
               <div className="relative flex-1">
                 <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-taupe" />
                 <input
+                  id="media-picker-search"
+                  name="media_picker_search"
                   type="text"
+                  autoComplete="off"
                   value={q}
                   onChange={(e) => { setQ(e.target.value); setPage(1); }}
                   placeholder="Search media…"
@@ -105,6 +108,8 @@ export default function MediaPicker({ value, onChange, label = 'Select Image' }:
                 <Upload size={14} />
                 {upload.isPending ? 'Uploading…' : 'Upload'}
                 <input
+                  id="media-picker-upload"
+                  name="media_picker_upload"
                   type="file"
                   accept="image/*"
                   className="sr-only"

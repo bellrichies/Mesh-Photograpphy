@@ -54,7 +54,7 @@ class BlogPostController extends Controller
                     u.first_name AS author_first, u.last_name AS author_last
              FROM blog_posts bp
              LEFT JOIN media m ON bp.cover_image_id = m.id AND m.deleted_at IS NULL
-             LEFT JOIN blog_categories bc ON bp.category_id = bc.id AND bc.deleted_at IS NULL
+             LEFT JOIN blog_categories bc ON bp.category_id = bc.id
              LEFT JOIN users u ON bp.author_id = u.id
              WHERE {$whereStr}
              ORDER BY bp.created_at DESC
@@ -74,15 +74,15 @@ class BlogPostController extends Controller
         $tags = $db->query(
             'SELECT bt.id, bt.name, bt.slug FROM blog_tags bt
              JOIN blog_post_tags bpt ON bt.id = bpt.tag_id
-             WHERE bpt.post_id = ? AND bt.deleted_at IS NULL ORDER BY bt.name',
+             WHERE bpt.post_id = ? ORDER BY bt.name',
             [$id]
         )->fetchAll();
 
         $data = $this->formatSummary($row);
-        $data['body']   = $row['body'] ?? '';
-        $data['tags']   = $tags;
-        $data['excerpt'] = $row['excerpt'] ?? null;
-        $data['seo_title'] = $row['seo_title'] ?? null;
+        $data['body']            = $row['body'] ?? '';
+        $data['tags']            = $tags;
+        $data['excerpt']         = $row['excerpt'] ?? null;
+        $data['seo_title']       = $row['seo_title'] ?? null;
         $data['seo_description'] = $row['seo_description'] ?? null;
 
         return $this->success($data);
@@ -105,7 +105,6 @@ class BlogPostController extends Controller
         $payload  = $request->authPayload();
         $authorId = $payload['user_id'] ?? $payload['sub'] ?? null;
 
-        // Determine publish time: explicit scheduled date, or now if publishing immediately
         $scheduledAt = !empty($data['published_at']) ? $data['published_at'] : null;
         $isPublished = !empty($data['is_published']) ? 1 : 0;
         $publishedAt = $scheduledAt ?? ($isPublished ? date('Y-m-d H:i:s') : null);
@@ -116,14 +115,14 @@ class BlogPostController extends Controller
             [
                 $data['title'],
                 $data['slug'],
-                $data['excerpt']        ?? null,
-                $data['body']           ?? '',
-                $data['category_id']    ?? null,
+                $data['excerpt']         ?? null,
+                $data['body']            ?? '',
+                $data['category_id']     ?? null,
                 $authorId,
-                $data['cover_image_id'] ?? null,
+                $data['cover_image_id']  ?? null,
                 $isPublished,
                 $publishedAt,
-                $data['seo_title']      ?? null,
+                $data['seo_title']       ?? null,
                 $data['seo_description'] ?? null,
             ]
         );
@@ -153,7 +152,6 @@ class BlogPostController extends Controller
         )->fetch();
         if ($conflict) return $this->validationError(['slug' => ['Slug is already in use.']]);
 
-        // Save a revision of the current state before overwriting
         $payload = $request->authPayload();
         $userId  = $payload['user_id'] ?? $payload['sub'] ?? null;
         $db->query(
@@ -161,7 +159,6 @@ class BlogPostController extends Controller
             [$id, $current['title'], $current['body'] ?? '', $userId]
         );
 
-        // Scheduled publishing: explicit published_at overrides, else set on first publish
         $scheduledAt  = !empty($data['published_at']) ? $data['published_at'] : null;
         $nowPublished = !empty($data['is_published']) ? 1 : 0;
         $wasPublished = (bool) ($current['is_published'] ?? 0);
@@ -171,7 +168,7 @@ class BlogPostController extends Controller
         } elseif ($nowPublished && !$wasPublished) {
             $publishedAt = date('Y-m-d H:i:s');
         } else {
-            $publishedAt = null; // keep existing via COALESCE
+            $publishedAt = null;
         }
 
         $db->query(
@@ -229,7 +226,7 @@ class BlogPostController extends Controller
                     u.first_name AS author_first, u.last_name AS author_last
              FROM blog_posts bp
              LEFT JOIN media m ON bp.cover_image_id = m.id AND m.deleted_at IS NULL
-             LEFT JOIN blog_categories bc ON bp.category_id = bc.id AND bc.deleted_at IS NULL
+             LEFT JOIN blog_categories bc ON bp.category_id = bc.id
              LEFT JOIN users u ON bp.author_id = u.id
              WHERE bp.id=? AND bp.deleted_at IS NULL LIMIT 1',
             [$id]
@@ -249,6 +246,10 @@ class BlogPostController extends Controller
 
     private function formatSummary(array $row): array
     {
+        $cat = $row['cat_id']
+            ? [['id' => (int)$row['cat_id'], 'name' => $row['cat_name'], 'slug' => $row['cat_slug']]]
+            : [];
+
         return [
             'id'           => (int)$row['id'],
             'title'        => $row['title'],
@@ -257,7 +258,8 @@ class BlogPostController extends Controller
             'cover'        => $this->fmt->formatCover($row),
             'status'       => $row['is_published'] ? 'published' : 'draft',
             'published_at' => $row['published_at'] ?? null,
-            'category'     => $row['cat_id'] ? ['id' => (int)$row['cat_id'], 'name' => $row['cat_name'], 'slug' => $row['cat_slug']] : null,
+            'categories'   => $cat,
+            'tags'         => [],
             'category_id'  => $row['category_id'] ?? null,
             'author'       => ($row['author_first'] ?? null) ? ['name' => trim($row['author_first'] . ' ' . $row['author_last'])] : null,
             'created_at'   => $row['created_at'],

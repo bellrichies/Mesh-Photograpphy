@@ -4,7 +4,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { authApi } from '@/api/auth';
-import { getErrorMessage } from '@/utils/api-errors';
 import { cn } from '@/utils/cn';
 
 const schema = z.object({

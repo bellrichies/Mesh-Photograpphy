@@ -18,11 +18,13 @@ class MediaFormatter
         if (empty($row[$prefix . '_path'])) return null;
 
         $path = $row[$prefix . '_path'];
+        $uuid = $row[$prefix . '_uuid'] ?? null;
+
         return [
-            'id'            => (int) ($row['cover_image_id'] ?? 0),
-            'uuid'          => $row[$prefix . '_uuid'] ?? '',
+            'id'            => (int) ($row[$prefix . '_id'] ?? $row['cover_image_id'] ?? 0),
+            'uuid'          => $uuid ?? '',
             'url'           => $this->baseUrl . '/uploads/' . ltrim($path, '/'),
-            'thumb_url'     => $this->baseUrl . '/uploads/thumb_' . ltrim($path, '/'),
+            'thumb_url'     => $this->thumbUrl($path, $uuid),
             'original_name' => $row[$prefix . '_original'] ?? '',
             'stored_name'   => $row[$prefix . '_file'] ?? '',
             'mime_type'     => $row[$prefix . '_mime'] ?? 'image/jpeg',
@@ -37,11 +39,13 @@ class MediaFormatter
     public function formatMedia(array $media): array
     {
         $path = ltrim($media['path'], '/');
+        $uuid = $media['uuid'] ?? null;
+
         return [
             'id'            => (int) $media['id'],
-            'uuid'          => $media['uuid'],
+            'uuid'          => $uuid ?? '',
             'url'           => $this->baseUrl . '/uploads/' . $path,
-            'thumb_url'     => $this->baseUrl . '/uploads/thumb_' . $path,
+            'thumb_url'     => $this->thumbUrl($path, $uuid),
             'original_name' => $media['original_name'],
             'stored_name'   => $media['file_name'],
             'mime_type'     => $media['mime_type'],
@@ -53,5 +57,27 @@ class MediaFormatter
             'sort_order'    => (int) ($media['sort_order'] ?? 0),
             'caption'       => $media['caption'] ?? null,
         ];
+    }
+
+    /**
+     * Returns the URL for a 320 px WebP thumbnail if one was generated during
+     * upload ({uuid}_320.webp in the same directory), otherwise falls back to
+     * the original file URL so images are never silently broken.
+     */
+    private function thumbUrl(string $path, ?string $uuid): string
+    {
+        $path = ltrim($path, '/');
+
+        if ($uuid) {
+            $dir       = dirname($path);
+            $thumbPath = ($dir === '.' ? '' : $dir . '/') . $uuid . '_320.webp';
+            $diskRoot  = defined('BASE_PATH') ? BASE_PATH : dirname(__DIR__, 3);
+            if (is_file($diskRoot . '/public/uploads/' . $thumbPath)) {
+                return $this->baseUrl . '/uploads/' . $thumbPath;
+            }
+        }
+
+        // No thumbnail variant on disk — serve the original
+        return $this->baseUrl . '/uploads/' . $path;
     }
 }

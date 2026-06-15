@@ -30,7 +30,10 @@ export default function BlogSidebar() {
         </h3>
         <form onSubmit={handleSearch} className="flex gap-2">
           <input
+            id="blog-sidebar-search"
+            name="q"
             type="search"
+            autoComplete="search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search posts…"

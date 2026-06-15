@@ -32,7 +32,7 @@ export default function OptimizedImage({
       width={width}
       height={height}
       loading={loading}
-      fetchPriority={fetchPriority}
+      fetchpriority={fetchPriority}
       decoding="async"
       srcSet={srcSet}
       sizes={sizes ?? (srcSet ? '(max-width: 640px) 320px, (max-width: 1280px) 640px, 1280px' : undefined)}

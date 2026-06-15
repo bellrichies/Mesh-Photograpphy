@@ -4,6 +4,8 @@ import { checkSlugAvailability, type SlugCheckType } from '@/api/admin/slug';
 import { cn } from '@/utils/cn';
 
 interface Props {
+  id?: string;
+  name?: string;
   value: string;
   onChange: (val: string) => void;
   type: SlugCheckType;
@@ -12,7 +14,7 @@ interface Props {
   disabled?: boolean;
 }
 
-export default function SlugInput({ value, onChange, type, exceptId, error, disabled }: Props) {
+export default function SlugInput({ id = 'slug', name = 'slug', value, onChange, type, exceptId, error, disabled }: Props) {
   const [checking, setChecking] = useState(false);
   const [available, setAvailable] = useState<boolean | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -39,7 +41,10 @@ export default function SlugInput({ value, onChange, type, exceptId, error, disa
   return (
     <div className="relative">
       <input
+        id={id}
+        name={name}
         type="text"
+        autoComplete="off"
         value={value}
         onChange={(e) => {
           setAvailable(null);

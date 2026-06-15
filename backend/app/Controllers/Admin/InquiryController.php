@@ -21,9 +21,15 @@ class InquiryController extends Controller
         $where  = ['deleted_at IS NULL'];
         $params = [];
 
+        // inquiries has no status column — filter via is_read / replied_at
         if ($status = $request->query('status')) {
-            $where[]  = 'status = ?';
-            $params[] = $status;
+            match ($status) {
+                'new'         => $where[] = 'is_read = 0 AND replied_at IS NULL',
+                'in_progress' => $where[] = 'is_read = 1 AND replied_at IS NULL',
+                'replied'     => $where[] = 'replied_at IS NOT NULL',
+                'closed'      => $where[] = 'replied_at IS NOT NULL',
+                default       => null,
+            };
         }
 
         $whereStr = implode(' AND ', $where);
@@ -75,7 +81,15 @@ class InquiryController extends Controller
             return $this->validationError(['status' => ['Invalid status value.']]);
         }
 
-        $db->query('UPDATE inquiries SET status=?, updated_at=NOW() WHERE id=?', [$status, $id]);
+        // inquiries has no status column — write to is_read / replied_at instead
+        match ($status) {
+            'new'         => $db->query('UPDATE inquiries SET is_read=0, read_at=NULL, replied_at=NULL, updated_at=NOW() WHERE id=?', [$id]),
+            'in_progress' => $db->query('UPDATE inquiries SET is_read=1, read_at=COALESCE(read_at,NOW()), replied_at=NULL, updated_at=NOW() WHERE id=?', [$id]),
+            'replied',
+            'closed'      => $db->query('UPDATE inquiries SET is_read=1, read_at=COALESCE(read_at,NOW()), replied_at=COALESCE(replied_at,NOW()), updated_at=NOW() WHERE id=?', [$id]),
+            default       => null,
+        };
+
         return $this->success(['id' => $id, 'status' => $status]);
     }
 
@@ -106,14 +120,20 @@ class InquiryController extends Controller
         $where  = ['deleted_at IS NULL'];
         $params = [];
 
+        // inquiries has no status column — filter via is_read / replied_at
         if ($status = $request->query('status')) {
-            $where[]  = 'status = ?';
-            $params[] = $status;
+            match ($status) {
+                'new'         => $where[] = 'is_read = 0 AND replied_at IS NULL',
+                'in_progress' => $where[] = 'is_read = 1 AND replied_at IS NULL',
+                'replied'     => $where[] = 'replied_at IS NOT NULL',
+                'closed'      => $where[] = 'replied_at IS NOT NULL',
+                default       => null,
+            };
         }
 
         $whereStr = implode(' AND ', $where);
         $rows     = $db->query(
-            "SELECT id, name, email, phone, subject, message, status, ip_address, created_at
+            "SELECT id, name, email, phone, subject, message, is_read, replied_at, ip_address, created_at
              FROM inquiries WHERE {$whereStr} ORDER BY created_at DESC",
             $params
         )->fetchAll();
@@ -124,6 +144,7 @@ class InquiryController extends Controller
         $out = fopen('php://output', 'w');
         fputcsv($out, $columns);
         foreach ($rows as $r) {
+            $derivedStatus = $r['replied_at'] ? 'replied' : ($r['is_read'] ? 'in_progress' : 'new');
             fputcsv($out, [
                 $r['id'],
                 $r['name'],
@@ -131,7 +152,7 @@ class InquiryController extends Controller
                 $r['phone']      ?? '',
                 $r['subject']    ?? '',
                 $r['message'],
-                $r['status'],
+                $derivedStatus,
                 $r['ip_address'] ?? '',
                 $r['created_at'],
             ]);
@@ -153,6 +174,11 @@ class InquiryController extends Controller
 
     private function formatRow(array $row): array
     {
+        // Derive status from is_read / replied_at (table has no status column)
+        $status = ($row['replied_at'] ?? null)
+            ? 'replied'
+            : (($row['is_read'] ?? 0) ? 'in_progress' : 'new');
+
         return [
             'id'         => (int)$row['id'],
             'name'       => $row['name'],
@@ -160,7 +186,7 @@ class InquiryController extends Controller
             'phone'      => $row['phone']   ?? null,
             'subject'    => $row['subject'] ?? null,
             'message'    => $row['message'],
-            'status'     => $row['status'],
+            'status'     => $status,
             'ip_address' => $row['ip_address'] ?? null,
             'created_at' => $row['created_at'],
             'notes'      => [],

@@ -194,7 +194,7 @@ export default function BlogPostFormPage() {
             <h2 className="font-display text-lg text-charcoal">Post Details</h2>
 
             <FormField label="Title" htmlFor="title" error={errors.title?.message} required>
-              <input id="title" type="text" className={fieldClass(!!errors.title)} {...register('title')} />
+              <input id="title" type="text" autoComplete="off" className={fieldClass(!!errors.title)} {...register('title')} />
             </FormField>
 
             <FormField label="Slug" htmlFor="slug" required>
@@ -214,12 +214,12 @@ export default function BlogPostFormPage() {
             </FormField>
 
             <FormField label="Excerpt" htmlFor="excerpt" hint="Brief summary shown in lists (optional).">
-              <textarea id="excerpt" rows={2} className={fieldClass(false)} {...register('excerpt')} />
+              <textarea id="excerpt" rows={2} autoComplete="off" className={fieldClass(false)} {...register('excerpt')} />
             </FormField>
 
             <FormField label="Category" htmlFor="category_id">
               <select id="category_id" className={fieldClass(false)} {...register('category_id')}>
-                <option value="">— No category —</option>
+                <option value="">- No category -</option>
                 {categories?.map((c) => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
@@ -229,7 +229,7 @@ export default function BlogPostFormPage() {
             {/* Publishing controls */}
             <div className="space-y-3">
               <label className="flex items-center gap-2 cursor-pointer font-body text-sm text-charcoal">
-                <input type="checkbox" className="rounded border-cream accent-bronze" {...register('is_published')} />
+                <input id="is_published" type="checkbox" className="rounded border-cream accent-bronze" {...register('is_published')} />
                 Published immediately
               </label>
 
@@ -244,6 +244,7 @@ export default function BlogPostFormPage() {
                     <input
                       id="published_at"
                       type="datetime-local"
+                      autoComplete="off"
                       className={`${fieldClass(false)} pl-9`}
                       {...register('published_at')}
                     />
@@ -265,7 +266,7 @@ export default function BlogPostFormPage() {
                   onChange={(html) => {
                     field.onChange(html);
                   }}
-                  placeholder="Write your post content here…"
+                  placeholder="Write your post content here..."
                   minHeight={400}
                 />
               )}

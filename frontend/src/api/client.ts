@@ -31,11 +31,20 @@ apiClient.interceptors.request.use((config) => {
 
 // Single-flight refresh queue — prevents multiple concurrent refresh calls
 let isRefreshing = false;
-let refreshQueue: Array<(token: string) => void> = [];
+type QueueItem = { resolve: (token: string) => void; reject: (err: unknown) => void };
+let refreshQueue: QueueItem[] = [];
 let onRefreshFailed: (() => void) | null = null;
 
 export const setOnRefreshFailed = (cb: () => void): void => {
   onRefreshFailed = cb;
+};
+
+const processQueue = (err: unknown, token: string | null) => {
+  refreshQueue.forEach(({ resolve, reject }) => {
+    if (err) reject(err);
+    else if (token) resolve(token);
+  });
+  refreshQueue = [];
 };
 
 const refreshAccessToken = async (): Promise<string> => {
@@ -56,40 +65,38 @@ apiClient.interceptors.response.use(
     const original = error.config as typeof error.config & { _retry?: boolean };
 
     if (error.response?.status === 401 && original && !original._retry) {
-      original._retry = true;
-
-      if (!isRefreshing) {
-        isRefreshing = true;
-        try {
-          const newToken = await refreshAccessToken();
-          refreshQueue.forEach((resolve) => resolve(newToken));
-          refreshQueue = [];
-        } catch {
-          refreshQueue = [];
-          isRefreshing = false;
-          onRefreshFailed?.();
-          return Promise.reject(error);
-        } finally {
-          isRefreshing = false;
-        }
+      // Don't attempt refresh when there's no session (accessToken is null — user not logged in),
+      // or when the failing request was the refresh endpoint itself (prevent infinite loop).
+      if (!accessToken || original.url?.includes('/auth/refresh')) {
+        if (original.url?.includes('/auth/refresh')) onRefreshFailed?.();
+        return Promise.reject(error);
       }
 
-      return new Promise((resolve, reject) => {
-        refreshQueue.push((token: string) => {
-          if (original.headers) {
-            original.headers.Authorization = `Bearer ${token}`;
-          }
-          resolve(apiClient(original));
+      // If a refresh is already in flight, queue this request to retry once it resolves.
+      if (isRefreshing) {
+        return new Promise<string>((resolve, reject) => {
+          refreshQueue.push({ resolve, reject });
+        }).then((token) => {
+          if (original.headers) original.headers.Authorization = `Bearer ${token}`;
+          return apiClient(original);
         });
-        // Handle if refresh fails while queued
-        const originalReject = reject;
-        refreshQueue.push = new Proxy(refreshQueue.push, {
-          apply(target, thisArg, args) {
-            if (args[0] === originalReject) return 0;
-            return Reflect.apply(target, thisArg, args);
-          },
-        });
-      });
+      }
+
+      original._retry = true;
+      isRefreshing = true;
+
+      try {
+        const newToken = await refreshAccessToken();
+        processQueue(null, newToken);
+        if (original.headers) original.headers.Authorization = `Bearer ${newToken}`;
+        return apiClient(original);
+      } catch (refreshError) {
+        processQueue(refreshError, null);
+        onRefreshFailed?.();
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
     }
 
     return Promise.reject(error);

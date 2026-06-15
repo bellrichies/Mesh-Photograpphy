@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from './client';
 import type { ApiResponse, PaginatedResponse } from '@/types/api';
-import type { Gallery, GalleryCategory, GalleryDetail } from '@/types/models';
+import type { Gallery, GalleryCategory, GalleryDetail, GalleryPhoto } from '@/types/models';
 
 export interface GalleryFilters {
   category?: string;
@@ -13,6 +13,7 @@ export interface GalleryFilters {
 export const galleryKeys = {
   all:        () => ['galleries'] as const,
   categories: () => [...galleryKeys.all(), 'categories'] as const,
+  photos:     (n: number) => [...galleryKeys.all(), 'photos', n] as const,
   list:       (f: GalleryFilters) => [...galleryKeys.all(), 'list', f] as const,
   detail:     (slug: string) => [...galleryKeys.all(), 'detail', slug] as const,
 };
@@ -30,6 +31,21 @@ async function fetchGalleryCategories(): Promise<GalleryCategory[]> {
 async function fetchGallery(slug: string): Promise<GalleryDetail> {
   const res = await apiClient.get<ApiResponse<GalleryDetail>>(`/galleries/${slug}`);
   return res.data.data;
+}
+
+async function fetchGalleryPhotos(perPage: number): Promise<GalleryPhoto[]> {
+  const res = await apiClient.get<ApiResponse<GalleryPhoto[]>>('/galleries/photos', {
+    params: { per_page: perPage },
+  });
+  return res.data.data;
+}
+
+export function useGalleryPhotos(perPage = 16) {
+  return useQuery({
+    queryKey: galleryKeys.photos(perPage),
+    queryFn:  () => fetchGalleryPhotos(perPage),
+    staleTime: 5 * 60 * 1000,
+  });
 }
 
 export function useGalleries(filters: GalleryFilters = {}) {

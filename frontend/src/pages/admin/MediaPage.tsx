@@ -34,12 +34,14 @@ function MediaDetail({
         </p>
         <p className="text-xs text-taupe font-body">
           {(media.size_bytes / 1024).toFixed(0)} KB
-          {media.width ? ` · ${media.width}×${media.height}` : ''}
+          {media.width ? ` - ${media.width}x${media.height}` : ''}
         </p>
       </div>
       <div>
-        <label className="block text-xs font-medium text-charcoal font-body mb-1">Alt Text</label>
+        <label htmlFor="media-alt-text" className="block text-xs font-medium text-charcoal font-body mb-1">Alt Text</label>
         <textarea
+          id="media-alt-text"
+          name="media_alt_text"
           value={alt}
           onChange={(e) => setAlt(e.target.value)}
           rows={2}
@@ -130,8 +132,10 @@ export default function MediaPage() {
             )}
           >
             <Upload size={16} />
-            {uploadMutation.isPending ? 'Uploading…' : 'Upload'}
+            {uploadMutation.isPending ? 'Uploading...' : 'Upload'}
             <input
+              id="media-upload"
+              name="media_upload"
               type="file"
               accept="image/*"
               multiple
@@ -146,10 +150,13 @@ export default function MediaPage() {
       <div className="mb-4 relative max-w-xs">
         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-taupe" />
         <input
-          type="text"
+          id="admin-media-search"
+          name="admin_media_search"
+          type="search"
+          autoComplete="search"
           value={q}
           onChange={(e) => { setQ(e.target.value); setPage(1); }}
-          placeholder="Search media…"
+          placeholder="Search media..."
           className="w-full pl-9 pr-3 py-2 border border-cream rounded-lg text-sm font-body focus:outline-none focus:ring-2 focus:ring-bronze"
         />
       </div>

@@ -49,7 +49,7 @@ export default function InquiryDetailPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="font-display text-lg text-charcoal">{inquiry.name}</p>
-              <p className="text-sm text-taupe font-body">{inquiry.email}{inquiry.phone ? ` · ${inquiry.phone}` : ''}</p>
+              <p className="text-sm text-taupe font-body">{inquiry.email}{inquiry.phone ? ` - ${inquiry.phone}` : ''}</p>
             </div>
             <StatusBadge status={inquiry.status} />
           </div>
@@ -99,16 +99,18 @@ export default function InquiryDetailPage() {
             <div key={n.id} className="border-l-2 border-cream pl-3 mb-3">
               <p className="text-sm text-charcoal font-body">{n.note}</p>
               <p className="text-xs text-taupe font-body mt-0.5">
-                {n.created_by.name} · {new Date(n.created_at).toLocaleDateString()}
+                {n.created_by.name} - {new Date(n.created_at).toLocaleDateString()}
               </p>
             </div>
           ))}
           <div className="mt-4">
             <textarea
+              id="inquiry-note"
+              name="inquiry_note"
               value={note}
               onChange={(e) => setNote(e.target.value)}
               rows={3}
-              placeholder="Add an internal note…"
+              placeholder="Add an internal note..."
               className="w-full px-3 py-2 border border-cream rounded-lg text-sm font-body focus:outline-none focus:ring-2 focus:ring-bronze resize-none"
             />
             <button
@@ -116,7 +118,7 @@ export default function InquiryDetailPage() {
               disabled={submitting || !note.trim()}
               className="mt-2 px-4 py-2 text-sm font-body bg-bronze text-ivory rounded-lg hover:bg-bronze-light disabled:opacity-60"
             >
-              {submitting ? 'Adding…' : 'Add Note'}
+              {submitting ? 'Adding...' : 'Add Note'}
             </button>
           </div>
         </div>

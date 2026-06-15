@@ -27,7 +27,7 @@ class TestimonialController extends Controller
                     m.file_name AS cover_file, m.mime_type AS cover_mime,
                     m.file_size AS cover_size, m.width AS cover_width, m.height AS cover_height
              FROM testimonials t
-             LEFT JOIN media m ON t.portrait_id = m.id AND m.deleted_at IS NULL
+             LEFT JOIN media m ON t.avatar_id = m.id AND m.deleted_at IS NULL
              WHERE t.deleted_at IS NULL
              ORDER BY t.sort_order ASC, t.created_at DESC'
         )->fetchAll();
@@ -46,20 +46,20 @@ class TestimonialController extends Controller
 
         $db = app_database();
         $db->query(
-            'INSERT INTO testimonials (client_name, client_role, body, rating, portrait_id, status, sort_order, created_at, updated_at)
+            'INSERT INTO testimonials (client_name, client_title, quote, rating, avatar_id, is_published, sort_order, created_at, updated_at)
              VALUES (?,?,?,?,?,?,?,NOW(),NOW())',
             [
                 $data['client_name'],
-                $data['client_role'] ?? null,
+                $data['client_role']  ?? null,
                 $data['body'],
                 min(5, max(1, (int)($data['rating'] ?? 5))),
-                $data['portrait_id'] ?? null,
-                $data['status']      ?? 'draft',
-                $data['sort_order']  ?? 0,
+                $data['portrait_id']  ?? null,
+                ($data['status'] ?? 'draft') === 'published' ? 1 : 0,
+                $data['sort_order']   ?? 0,
             ]
         );
 
-        $id  = (int) $db->lastInsertId();
+        $id = (int) $db->lastInsertId();
         return $this->created($this->formatRow($this->findOrFail($db, $id)));
     }
 
@@ -73,15 +73,15 @@ class TestimonialController extends Controller
         if ($err) return $err;
 
         $db->query(
-            'UPDATE testimonials SET client_name=?,client_role=?,body=?,rating=?,portrait_id=?,status=?,sort_order=?,updated_at=NOW() WHERE id=?',
+            'UPDATE testimonials SET client_name=?,client_title=?,quote=?,rating=?,avatar_id=?,is_published=?,sort_order=?,updated_at=NOW() WHERE id=?',
             [
                 $data['client_name'],
-                $data['client_role'] ?? null,
+                $data['client_role']  ?? null,
                 $data['body'],
                 min(5, max(1, (int)($data['rating'] ?? 5))),
-                $data['portrait_id'] ?? null,
-                $data['status']      ?? 'draft',
-                $data['sort_order']  ?? 0,
+                $data['portrait_id']  ?? null,
+                ($data['status'] ?? 'draft') === 'published' ? 1 : 0,
+                $data['sort_order']   ?? 0,
                 $id,
             ]
         );
@@ -106,7 +106,7 @@ class TestimonialController extends Controller
                     m.file_name AS cover_file, m.mime_type AS cover_mime,
                     m.file_size AS cover_size, m.width AS cover_width, m.height AS cover_height
              FROM testimonials t
-             LEFT JOIN media m ON t.portrait_id = m.id AND m.deleted_at IS NULL
+             LEFT JOIN media m ON t.avatar_id = m.id AND m.deleted_at IS NULL
              WHERE t.id=? AND t.deleted_at IS NULL LIMIT 1',
             [$id]
         )->fetch();
@@ -120,12 +120,12 @@ class TestimonialController extends Controller
         return [
             'id'          => (int)$row['id'],
             'client_name' => $row['client_name'],
-            'client_role' => $row['client_role'] ?? null,
-            'body'        => $row['body'],
+            'client_role' => $row['client_title'] ?? null,
+            'body'        => $row['quote'],
             'rating'      => (int)$row['rating'],
             'portrait'    => $this->fmt->formatCover($row, 'cover'),
-            'portrait_id' => $row['portrait_id'] ?? null,
-            'status'      => $row['status'],
+            'portrait_id' => $row['avatar_id']    ?? null,
+            'status'      => $row['is_published'] ? 'published' : 'draft',
             'sort_order'  => (int)$row['sort_order'],
             'created_at'  => $row['created_at'],
             'updated_at'  => $row['updated_at'],

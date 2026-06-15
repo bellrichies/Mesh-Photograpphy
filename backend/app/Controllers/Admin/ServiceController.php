@@ -56,7 +56,7 @@ class ServiceController extends Controller
         }
 
         $db->query(
-            'INSERT INTO services (title, slug, short_description, description, price_display, cover_image_id, is_published, sort_order, seo_title, seo_description, created_at, updated_at)
+            'INSERT INTO services (title, slug, short_desc, description, price_label, cover_image_id, is_published, sort_order, seo_title, seo_description, created_at, updated_at)
              VALUES (?,?,?,?,?,?,?,?,?,?,NOW(),NOW())',
             [
                 $data['title'],
@@ -90,7 +90,7 @@ class ServiceController extends Controller
         }
 
         $db->query(
-            'UPDATE services SET title=?,slug=?,short_description=?,description=?,price_display=?,cover_image_id=?,is_published=?,sort_order=?,seo_title=?,seo_description=?,updated_at=NOW() WHERE id=?',
+            'UPDATE services SET title=?,slug=?,short_desc=?,description=?,price_label=?,cover_image_id=?,is_published=?,sort_order=?,seo_title=?,seo_description=?,updated_at=NOW() WHERE id=?',
             [
                 $data['title'],
                 $data['slug'],
@@ -141,15 +141,15 @@ class ServiceController extends Controller
             'id'                => (int)$row['id'],
             'title'             => $row['title'],
             'slug'              => $row['slug'],
-            'short_description' => $row['short_description'] ?? null,
-            'description'       => $row['description']       ?? null,
-            'price_display'     => $row['price_display']     ?? null,
+            'short_description' => $row['short_desc']      ?? null,
+            'description'       => $row['description']     ?? null,
+            'price_display'     => $row['price_label']     ?? null,
             'cover'             => $this->fmt->formatCover($row),
-            'cover_image_id'    => $row['cover_image_id']    ?? null,
+            'cover_image_id'    => $row['cover_image_id']  ?? null,
             'status'            => $row['is_published'] ? 'published' : 'draft',
             'sort_order'        => (int)$row['sort_order'],
-            'seo_title'         => $row['seo_title']         ?? null,
-            'seo_description'   => $row['seo_description']   ?? null,
+            'seo_title'         => $row['seo_title']       ?? null,
+            'seo_description'   => $row['seo_description'] ?? null,
             'created_at'        => $row['created_at'],
             'updated_at'        => $row['updated_at'],
         ];

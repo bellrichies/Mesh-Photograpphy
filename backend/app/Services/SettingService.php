@@ -34,9 +34,12 @@ class SettingService
             'social' => [
                 'instagram' => $map['social_instagram'] ?? null,
                 'facebook'  => $map['social_facebook']  ?? null,
-                'twitter'   => $map['social_twitter']   ?? null,
+                'twitter'   => $map['social_x'] ?? $map['social_twitter'] ?? null,
+                'x'         => $map['social_x'] ?? $map['social_twitter'] ?? null,
                 'pinterest' => $map['social_pinterest'] ?? null,
                 'youtube'   => $map['social_youtube']   ?? null,
+                'linkedin'  => $map['social_linkedin']  ?? null,
+                'tiktok'    => $map['social_tiktok']    ?? null,
             ],
             'seo' => [
                 // Support both the legacy CoreCmsSeeder key format and the new format

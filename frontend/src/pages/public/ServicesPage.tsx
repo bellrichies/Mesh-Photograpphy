@@ -25,7 +25,7 @@ export default function ServicesPage() {
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="rounded-2xl bg-cream animate-pulse h-80" />
+                <div key={i} className="bg-cream animate-pulse h-80" />
               ))}
             </div>
           ) : list.length > 0 ? (
@@ -34,7 +34,7 @@ export default function ServicesPage() {
                 <Link
                   key={s.id}
                   to={`/services/${s.slug}`}
-                  className="group bg-ivory border border-cream rounded-2xl overflow-hidden hover:shadow-soft transition-shadow"
+                  className="group bg-ivory border border-cream overflow-hidden hover:shadow-soft transition-shadow"
                 >
                   {s.cover && (
                     <div className="aspect-video overflow-hidden">
@@ -71,7 +71,7 @@ export default function ServicesPage() {
           )}
 
           {/* CTA */}
-          <div className="mt-20 bg-ivory-warm rounded-2xl p-10 text-center">
+          <div className="mt-20 bg-ivory-warm p-10 text-center">
             <h2 className="font-display text-3xl text-charcoal">Ready to work together?</h2>
             <p className="font-body text-taupe mt-3">Let's discuss your vision and find the perfect package.</p>
             <div className="flex gap-4 justify-center mt-6">

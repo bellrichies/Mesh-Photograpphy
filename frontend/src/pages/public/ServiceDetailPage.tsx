@@ -43,7 +43,7 @@ export default function ServiceDetailPage() {
                 width={900}
                 height={506}
                 loading="eager"
-                fetchPriority="high"
+                fetchpriority="high"
                 decoding="async"
                 className="w-full h-full object-cover"
               />

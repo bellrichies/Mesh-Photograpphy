@@ -29,9 +29,10 @@ class MediaController extends Controller
         $where  = ['deleted_at IS NULL'];
         $params = [];
 
+        // Filter by MIME type category (image, document, video) using mime_type prefix
         if ($type = $request->query('type')) {
-            $where[]  = 'file_type = ?';
-            $params[] = $type;
+            $where[]  = 'mime_type LIKE ?';
+            $params[] = $type . '/%';
         }
 
         if ($q = $request->query('q')) {
@@ -94,21 +95,21 @@ class MediaController extends Controller
             return $this->error('Failed to save uploaded file.', 500);
         }
 
-        $fileType = str_starts_with($mime, 'image/') ? 'image' : 'document';
+        $isImage  = str_starts_with($mime, 'image/');
         $fullPath = "{$dir}/{$fileName}";
-        [$width, $height] = $fileType === 'image' ? (@getimagesize($fullPath) ?: [null, null]) : [null, null];
+        [$width, $height] = $isImage ? (@getimagesize($fullPath) ?: [null, null]) : [null, null];
 
         // WebP conversion and responsive variants for raster images
         $variants = [];
-        if ($fileType === 'image' && $mime !== 'image/svg+xml' && function_exists('imagecreatefromstring')) {
+        if ($isImage && $mime !== 'image/svg+xml' && function_exists('imagecreatefromstring')) {
             $variants = $this->generateVariants($fullPath, $dir, $uuid, $mime);
         }
 
         $db = app_database();
         $db->query(
-            'INSERT INTO media (uuid, path, file_name, original_name, mime_type, file_type, file_size, width, height, status, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, \'active\', NOW(), NOW())',
-            [$uuid, $path, $fileName, $file['name'], $mime, $fileType, $file['size'], $width, $height]
+            'INSERT INTO media (uuid, path, file_name, original_name, mime_type, file_size, width, height, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())',
+            [$uuid, $path, $fileName, $file['name'], $mime, $file['size'], $width, $height]
         );
 
         $id  = (int) $db->lastInsertId();
@@ -129,8 +130,8 @@ class MediaController extends Controller
 
         $data = $request->json();
         $db->query(
-            'UPDATE media SET alt_text=?, title=?, caption=?, updated_at=NOW() WHERE id=?',
-            [$data['alt_text'] ?? null, $data['title'] ?? null, $data['caption'] ?? null, $id]
+            'UPDATE media SET alt_text=?, updated_at=NOW() WHERE id=?',
+            [$data['alt_text'] ?? null, $id]
         );
 
         $row = $db->query('SELECT * FROM media WHERE id=?', [$id])->fetch();
@@ -139,9 +140,9 @@ class MediaController extends Controller
 
     public function archive(Request $request, Response $response): Response
     {
-        $db  = app_database();
-        $id  = (int) $request->param('id');
-        $db->query('UPDATE media SET status=\'archived\', updated_at=NOW() WHERE id=? AND deleted_at IS NULL', [$id]);
+        $db = app_database();
+        $id = (int) $request->param('id');
+        $db->query('UPDATE media SET deleted_at=NOW() WHERE id=? AND deleted_at IS NULL', [$id]);
         return $this->success(null, 'Archived.');
     }
 
@@ -163,7 +164,6 @@ class MediaController extends Controller
 
     /**
      * Generate WebP variants at 320, 640, and 1280 px widths.
-     * Returns a map of width => variant filename (relative to uploads dir).
      *
      * @return array<int, string>
      */
@@ -182,12 +182,11 @@ class MediaController extends Controller
         $widths   = [320, 640, 1280];
 
         foreach ($widths as $w) {
-            if ($origW <= $w) continue; // skip if original is smaller
+            if ($origW <= $w) continue;
 
             $h   = (int) round(($w / $origW) * $origH);
             $dst = imagecreatetruecolor($w, $h);
 
-            // Preserve transparency for PNG sources
             if ($mime === 'image/png') {
                 imagealphablending($dst, false);
                 imagesavealpha($dst, true);
@@ -207,14 +206,13 @@ class MediaController extends Controller
 
         imagedestroy($src);
 
-        // Also create a full-size WebP if source is not already WebP
         if ($mime !== 'image/webp') {
             $full = @imagecreatefromstring($imageData);
             if ($full) {
                 $webpFile = "{$uuid}.webp";
                 @imagewebp($full, "{$dir}/{$webpFile}", 88);
                 imagedestroy($full);
-                $variants[0] = $webpFile; // 0 = full-size marker
+                $variants[0] = $webpFile;
             }
         }
 
@@ -222,8 +220,6 @@ class MediaController extends Controller
     }
 
     /**
-     * Build an HTML srcset string from the variant map.
-     *
      * @param array<int, string> $variants
      */
     private function buildSrcset(string $basePath, array $variants): ?string
@@ -235,7 +231,7 @@ class MediaController extends Controller
 
         $entries = [];
         foreach ($variants as $w => $file) {
-            if ($w === 0) continue; // full-size webp — used as src, not srcset
+            if ($w === 0) continue;
             $entries[] = $baseUrl . $dir . '/' . $file . " {$w}w";
         }
 

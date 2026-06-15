@@ -91,10 +91,10 @@ function app_settings_all(): array
 
     try {
         $db   = app_database();
-        $rows = $db->query('SELECT `group`, `key`, `value`, `type` FROM settings')->fetchAll(PDO::FETCH_ASSOC);
+        $rows = $db->query('SELECT group_name, key_name, value, type FROM site_settings')->fetchAll(PDO::FETCH_ASSOC);
         $data = [];
         foreach ($rows as $row) {
-            $data[$row['group']][$row['key']] = $row['value'];
+            $data[$row['group_name']][$row['key_name']] = $row['value'];
         }
 
         if (!is_dir($cacheDir)) {

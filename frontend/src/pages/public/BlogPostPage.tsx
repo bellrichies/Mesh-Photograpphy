@@ -15,7 +15,7 @@ export default function BlogPostPage() {
       <div className="pt-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row gap-12">
           <div className="flex-1 min-w-0">
-            <div className="aspect-video bg-cream rounded-2xl animate-pulse mb-8" />
+            <div className="aspect-video bg-cream animate-pulse mb-8" />
             <div className="space-y-4">
               {Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className="h-4 bg-cream rounded animate-pulse" style={{ width: `${60 + (i % 3) * 15}%` }} />
@@ -103,7 +103,7 @@ export default function BlogPostPage() {
 
               {/* Cover */}
               {post.cover && (
-                <div className="aspect-video overflow-hidden rounded-2xl mb-10">
+                <div className="aspect-video overflow-hidden mb-10">
                   <img
                     src={post.cover.url}
                     alt={post.cover.alt_text ?? post.title}
@@ -213,7 +213,7 @@ export default function BlogPostPage() {
                   <article key={rp.id} className="group">
                     <Link to={`/blog/${rp.slug}`}>
                       {rp.cover ? (
-                        <div className="aspect-video overflow-hidden rounded-2xl mb-3">
+                        <div className="aspect-video overflow-hidden mb-3">
                           <img
                             src={rp.cover.url}
                             alt={rp.cover.alt_text ?? rp.title}
@@ -225,7 +225,7 @@ export default function BlogPostPage() {
                           />
                         </div>
                       ) : (
-                        <div className="aspect-video rounded-2xl bg-cream mb-3" />
+                        <div className="aspect-video bg-cream mb-3" />
                       )}
                       <h3 className="font-display text-xl text-charcoal group-hover:text-bronze transition-colors">{rp.title}</h3>
                       {rp.published_at && (

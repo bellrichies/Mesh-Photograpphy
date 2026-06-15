@@ -28,7 +28,7 @@
         "seed:roles-permissions": "php database/console.php seed:roles-permissions",
         "seed:core-cms": "php database/console.php seed:core-cms",
         "seed:demo-content": "php database/console.php seed:demo-content",
-        "test": "vendor/bin/phpunit"
+        "test": "vendor/bin/phpunit --no-coverage"
     },
     "config": {
         "optimize-autoloader": true,

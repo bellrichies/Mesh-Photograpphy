@@ -182,9 +182,12 @@ export interface HeroSlide {
 
 export interface PageSection {
   id: number;
+  section_key: string;
   section_type: string;
   title: string | null;
   content: string | null;
+  media_id: number | null;
+  media: MediaRecord | null;
   settings: Record<string, unknown>;
   sort_order: number;
 }
@@ -196,6 +199,8 @@ export interface CmsPage {
   template: string | null;
   sections: PageSection[];
   seo: SeoMeta;
+  og_image_id?: number | null;
+  og_image?: MediaRecord | null;
 }
 
 // ─── Inquiry ──────────────────────────────────────────────────────────────────

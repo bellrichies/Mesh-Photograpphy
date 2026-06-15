@@ -55,7 +55,10 @@ function CategoryManager() {
     <div className="space-y-4">
       <form onSubmit={handleCreate} className="flex gap-3">
         <input
+          id="blog-category-name"
+          name="blog_category_name"
           type="text"
+          autoComplete="off"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="New category name"
@@ -130,7 +133,10 @@ function TagManager() {
     <div className="space-y-4">
       <form onSubmit={handleCreate} className="flex gap-3">
         <input
+          id="blog-tag-name"
+          name="blog_tag_name"
           type="text"
+          autoComplete="off"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="New tag name"
@@ -190,6 +196,7 @@ interface MediaUrlFieldProps {
 
 function MediaUrlField({ label, value, onChange, hint }: MediaUrlFieldProps) {
   const [selectedMedia, setSelectedMedia] = useState<MediaRecord | null>(null);
+  const fieldId = label.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
 
   const handleMediaChange = (media: MediaRecord | null) => {
     setSelectedMedia(media);
@@ -212,6 +219,8 @@ function MediaUrlField({ label, value, onChange, hint }: MediaUrlFieldProps) {
         {value && (
           <div className="flex items-center gap-2">
             <input
+              id={`${fieldId}_url`}
+              name={`${fieldId}_url`}
               type="url"
               readOnly
               value={value}
@@ -248,13 +257,17 @@ function ColorField({ label, value, onChange, hint }: ColorFieldProps) {
       <div className="flex items-center gap-3">
         <input
           id={fieldId}
+          name={fieldId}
           type="color"
           value={value || '#C4923B'}
           onChange={(e) => onChange(e.target.value)}
           className="h-10 w-16 rounded border border-cream cursor-pointer bg-ivory p-0.5"
         />
         <input
+          id={`${fieldId}_hex`}
+          name={`${fieldId}_hex`}
           type="text"
+          autoComplete="off"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="#C4923B"
@@ -281,9 +294,11 @@ const CONTACT_FIELDS: { key: string; label: string; type?: FieldType }[] = [
 const SOCIAL_FIELDS: { key: string; label: string }[] = [
   { key: 'instagram', label: 'Instagram URL' },
   { key: 'facebook',  label: 'Facebook URL' },
-  { key: 'twitter',   label: 'Twitter / X URL' },
+  { key: 'x',         label: 'X / Twitter URL' },
   { key: 'youtube',   label: 'YouTube URL' },
   { key: 'pinterest', label: 'Pinterest URL' },
+  { key: 'linkedin',  label: 'LinkedIn URL' },
+  { key: 'tiktok',    label: 'TikTok URL' },
 ];
 
 const SEO_FIELDS: { key: string; label: string; type?: FieldType }[] = [
@@ -351,12 +366,20 @@ export default function SettingsPage() {
   const renderField = (group: string, key: string, label: string, type: FieldType = 'text') => {
     const value = form[group]?.[key] ?? '';
     const inputId = `${group}_${key}`;
+    const autocomplete =
+      key === 'email' ? 'email' :
+      key === 'phone' ? 'tel' :
+      key === 'address' ? 'street-address' :
+      type === 'url' ? 'url' :
+      'off';
     return (
       <FormField key={key} label={label} htmlFor={inputId}>
         {type === 'textarea' ? (
           <textarea
             id={inputId}
+            name={inputId}
             rows={3}
+            autoComplete={autocomplete}
             className={fieldClass(false)}
             value={value}
             onChange={(e) => handleChange(group, key, e.target.value)}
@@ -364,7 +387,9 @@ export default function SettingsPage() {
         ) : (
           <input
             id={inputId}
+            name={inputId}
             type={type}
+            autoComplete={autocomplete}
             className={fieldClass(false)}
             value={value}
             onChange={(e) => handleChange(group, key, e.target.value)}
@@ -514,6 +539,7 @@ export default function SettingsPage() {
                 <FormField label="Display / Heading Font" htmlFor="theme_display_font">
                   <select
                     id="theme_display_font"
+                    name="theme_display_font"
                     className={fieldClass(false)}
                     value={form['theme']?.['display_font'] ?? 'Cormorant Garamond'}
                     onChange={(e) => handleChange('theme', 'display_font', e.target.value)}
@@ -527,6 +553,7 @@ export default function SettingsPage() {
                 <FormField label="Body / UI Font" htmlFor="theme_body_font">
                   <select
                     id="theme_body_font"
+                    name="theme_body_font"
                     className={fieldClass(false)}
                     value={form['theme']?.['body_font'] ?? 'Inter'}
                     onChange={(e) => handleChange('theme', 'body_font', e.target.value)}

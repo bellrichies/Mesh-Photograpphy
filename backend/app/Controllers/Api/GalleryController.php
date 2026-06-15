@@ -45,6 +45,36 @@ class GalleryController extends Controller
         return $this->success($this->service->getCategories());
     }
 
+    public function photos(Request $request, Response $response): Response
+    {
+        $db      = app_database();
+        $perPage = min(100, max(1, (int) $request->query('per_page', 16)));
+
+        // Deduplicated individual photos from published galleries, ordered by
+        // gallery sort then media sort so the homepage grid feels curated.
+        $rows = $db->query(
+            'SELECT m.id, m.uuid, m.path, m.alt_text, m.width, m.height, m.file_size,
+                    m.mime_type, m.file_name, m.original_name,
+                    MIN(gm.sort_order) AS sort_order,
+                    MIN(gm.caption)    AS caption
+             FROM gallery_media gm
+             JOIN media     m ON gm.media_id   = m.id  AND m.deleted_at IS NULL
+             JOIN galleries g ON gm.gallery_id = g.id
+                              AND g.deleted_at  IS NULL
+                              AND g.is_published = 1
+             GROUP BY m.id, m.uuid, m.path, m.alt_text, m.width, m.height,
+                      m.file_size, m.mime_type, m.file_name, m.original_name
+             ORDER BY MIN(g.sort_order) ASC, MIN(gm.sort_order) ASC
+             LIMIT ?',
+            [$perPage]
+        )->fetchAll();
+
+        $fmt   = new \App\Services\MediaFormatter();
+        $items = array_map([$fmt, 'formatMedia'], $rows);
+
+        return $this->success($items);
+    }
+
     public function show(Request $request, Response $response): Response
     {
         $slug   = $request->param('slug');

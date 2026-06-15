@@ -37,6 +37,7 @@ export default function SeoPanel<T extends FieldValues & SeoFields>({ register, 
             <input
               id="seo_title"
               type="text"
+              autoComplete="off"
               className={fieldClass(!!errors.seo_title)}
               {...register('seo_title' as unknown as Path<T>)}
             />
@@ -50,6 +51,7 @@ export default function SeoPanel<T extends FieldValues & SeoFields>({ register, 
             <textarea
               id="seo_description"
               rows={3}
+              autoComplete="off"
               className={fieldClass(!!errors.seo_description)}
               {...register('seo_description' as unknown as Path<T>)}
             />

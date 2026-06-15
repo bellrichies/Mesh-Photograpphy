@@ -8,7 +8,7 @@ import DataTable, { type Column } from '@/components/admin/DataTable';
 import StatusBadge from '@/components/admin/StatusBadge';
 import Pagination from '@/components/admin/Pagination';
 
-const STATUS_TABS = ['all', 'new', 'contacted', 'quoted', 'booked', 'cancelled'] as const;
+const STATUS_TABS = ['all', 'new', 'contacted', 'booked', 'declined', 'cancelled'] as const;
 
 export default function BookingsPage() {
   const navigate   = useNavigate();
@@ -79,7 +79,7 @@ export default function BookingsPage() {
 
       <DataTable columns={columns} data={data?.data ?? []} keyExtractor={(b) => b.id} loading={isLoading} emptyMessage="No booking requests found." />
 
-      {data && (
+      {data?.meta && (
         <Pagination
           currentPage={data.meta.current_page}
           lastPage={data.meta.last_page}

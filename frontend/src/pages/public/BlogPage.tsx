@@ -10,19 +10,19 @@ function BlogPostCard({ post }: { post: { id: number; title: string; slug: strin
     <article className="group">
       <Link to={`/blog/${post.slug}`}>
         {post.cover ? (
-          <div className="aspect-video overflow-hidden rounded-2xl mb-4">
+          <div className="aspect-[4/5] overflow-hidden mb-4">
             <img
               src={post.cover.url}
               alt={post.cover.alt_text ?? post.title}
-              width={640}
-              height={360}
+              width={480}
+              height={600}
               loading="lazy"
               decoding="async"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
           </div>
         ) : (
-          <div className="aspect-video rounded-2xl bg-cream mb-4" />
+          <div className="aspect-[4/5] bg-cream mb-4" />
         )}
 
         {post.categories.length > 0 && (
@@ -95,7 +95,7 @@ export default function BlogPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                   {Array.from({ length: 4 }).map((_, i) => (
                     <div key={i}>
-                      <div className="aspect-video rounded-2xl bg-cream animate-pulse mb-4" />
+                      <div className="aspect-[4/5] bg-cream animate-pulse mb-4" />
                       <div className="h-5 bg-cream rounded animate-pulse w-3/4 mb-2" />
                       <div className="h-4 bg-cream rounded animate-pulse w-full" />
                     </div>
@@ -139,7 +139,10 @@ export default function BlogPage() {
                 <h3 className="font-display text-lg text-charcoal mb-3">Search</h3>
                 <form onSubmit={applySearch} className="flex gap-2">
                   <input
+                    id="blog-search"
+                    name="q"
                     type="search"
+                    autoComplete="search"
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
                     placeholder="Search posts…"

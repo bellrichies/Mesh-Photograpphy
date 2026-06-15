@@ -151,7 +151,7 @@ export default function GalleryFormPage() {
           <h2 className="font-display text-lg text-charcoal">Details</h2>
 
           <FormField label="Title" htmlFor="title" error={errors.title?.message} required>
-            <input id="title" type="text" className={fieldClass(!!errors.title)} {...register('title')} />
+            <input id="title" type="text" autoComplete="off" className={fieldClass(!!errors.title)} {...register('title')} />
           </FormField>
 
           <FormField label="Slug" htmlFor="slug" required>
@@ -171,11 +171,11 @@ export default function GalleryFormPage() {
           </FormField>
 
           <FormField label="Category" htmlFor="category" hint="e.g. wedding, portrait, commercial">
-            <input id="category" type="text" className={fieldClass(false)} {...register('category')} />
+            <input id="category" type="text" autoComplete="off" className={fieldClass(false)} {...register('category')} />
           </FormField>
 
           <FormField label="Description" htmlFor="description">
-            <textarea id="description" rows={3} className={fieldClass(false)} {...register('description')} />
+            <textarea id="description" rows={3} autoComplete="off" className={fieldClass(false)} {...register('description')} />
           </FormField>
 
           <FormField label="Sort Order" htmlFor="sort_order" hint="Lower numbers appear first.">
@@ -184,11 +184,11 @@ export default function GalleryFormPage() {
 
           <div className="flex items-center gap-6">
             <label className="flex items-center gap-2 cursor-pointer font-body text-sm text-charcoal">
-              <input type="checkbox" className="rounded border-cream accent-bronze" {...register('is_published')} />
+              <input id="gallery-is-published" type="checkbox" className="rounded border-cream accent-bronze" {...register('is_published')} />
               Published
             </label>
             <label className="flex items-center gap-2 cursor-pointer font-body text-sm text-charcoal">
-              <input type="checkbox" className="rounded border-cream accent-bronze" {...register('is_featured')} />
+              <input id="gallery-is-featured" type="checkbox" className="rounded border-cream accent-bronze" {...register('is_featured')} />
               Featured
             </label>
           </div>
@@ -251,7 +251,10 @@ export default function GalleryFormPage() {
                     {/* Caption */}
                     <div className="p-2 bg-ivory-warm border-t border-cream">
                       <input
+                        id={`gallery-caption-${m.id}`}
+                        name={`gallery_caption_${m.id}`}
                         type="text"
+                        autoComplete="off"
                         placeholder="Caption (optional)"
                         value={captions[m.id] ?? m.caption ?? ''}
                         onChange={(e) => setCaptions((prev) => ({ ...prev, [m.id]: e.target.value }))}

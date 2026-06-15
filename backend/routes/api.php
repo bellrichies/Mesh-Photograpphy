@@ -14,6 +14,7 @@ return function (Router $router): void {
     // Galleries (public)
     $router->get('/api/v1/galleries',            'Api\GalleryController@index');
     $router->get('/api/v1/galleries/categories', 'Api\GalleryController@categories');
+    $router->get('/api/v1/galleries/photos',     'Api\GalleryController@photos');
     $router->get('/api/v1/galleries/{slug}',     'Api\GalleryController@show');
 
     // Services (public)

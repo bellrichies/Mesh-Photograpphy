@@ -21,6 +21,7 @@ const ResetPasswordPage  = lazy(() => import('./pages/auth/ResetPasswordPage'));
 // Public pages
 const HomePage          = lazy(() => import('./pages/public/HomePage'));
 const PortfolioPage     = lazy(() => import('./pages/public/PortfolioPage'));
+const PhotoPortfolioPage = lazy(() => import('./pages/public/PhotoPortfolioPage'));
 const GalleryDetailPage = lazy(() => import('./pages/public/GalleryDetailPage'));
 const ServicesPage      = lazy(() => import('./pages/public/ServicesPage'));
 const ServiceDetailPage = lazy(() => import('./pages/public/ServiceDetailPage'));
@@ -107,6 +108,7 @@ export default function App() {
         <Route element={<PublicLayout />}>
           <Route path="/"                       element={<HomePage />} />
           <Route path="/portfolio"              element={<PortfolioPage />} />
+          <Route path="/portfolio/photo"        element={<PhotoPortfolioPage />} />
           <Route path="/portfolio/:slug"        element={<GalleryDetailPage />} />
           <Route path="/services"               element={<ServicesPage />} />
           <Route path="/services/:slug"         element={<ServiceDetailPage />} />

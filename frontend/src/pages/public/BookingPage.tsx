@@ -71,6 +71,7 @@ export default function BookingPage() {
                 <input
                   id="name"
                   type="text"
+                  autoComplete="name"
                   {...register('name')}
                   className="w-full border border-cream bg-ivory px-4 py-3 font-body text-sm text-charcoal placeholder:text-taupe focus:outline-none focus:border-bronze rounded-lg"
                   placeholder="Your name"
@@ -85,6 +86,7 @@ export default function BookingPage() {
                 <input
                   id="email"
                   type="email"
+                  autoComplete="email"
                   {...register('email')}
                   className="w-full border border-cream bg-ivory px-4 py-3 font-body text-sm text-charcoal placeholder:text-taupe focus:outline-none focus:border-bronze rounded-lg"
                   placeholder="your@email.com"
@@ -98,6 +100,7 @@ export default function BookingPage() {
               <input
                 id="phone"
                 type="tel"
+                autoComplete="tel"
                 {...register('phone')}
                 className="w-full border border-cream bg-ivory px-4 py-3 font-body text-sm text-charcoal placeholder:text-taupe focus:outline-none focus:border-bronze rounded-lg"
                 placeholder="Optional but helpful"
@@ -146,6 +149,7 @@ export default function BookingPage() {
                 <input
                   id="location"
                   type="text"
+                  autoComplete="street-address"
                   {...register('location')}
                   className="w-full border border-cream bg-ivory px-4 py-3 font-body text-sm text-charcoal placeholder:text-taupe focus:outline-none focus:border-bronze rounded-lg"
                   placeholder="City, venue, or 'To be decided'"

@@ -1,9 +1,9 @@
 import { useEffect, useCallback } from 'react';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
-import type { GalleryMedia } from '@/types/models';
+import type { GalleryPhoto } from '@/types/models';
 
 interface LightboxProps {
-  images: GalleryMedia[];
+  images: GalleryPhoto[];
   activeIndex: number;
   onClose: () => void;
   onPrev: () => void;

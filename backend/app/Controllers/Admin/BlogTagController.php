@@ -17,7 +17,6 @@ class BlogTagController extends Controller
             'SELECT bt.id, bt.name, bt.slug, COUNT(bpt.post_id) AS post_count
              FROM blog_tags bt
              LEFT JOIN blog_post_tags bpt ON bt.id=bpt.tag_id
-             WHERE bt.deleted_at IS NULL
              GROUP BY bt.id, bt.name, bt.slug
              ORDER BY bt.name ASC'
         )->fetchAll();
@@ -37,11 +36,11 @@ class BlogTagController extends Controller
         if ($err) return $err;
 
         $db = app_database();
-        if ($db->query('SELECT id FROM blog_tags WHERE slug=? AND deleted_at IS NULL', [$data['slug']])->fetch()) {
+        if ($db->query('SELECT id FROM blog_tags WHERE slug=?', [$data['slug']])->fetch()) {
             return $this->validationError(['slug' => ['Slug already exists.']]);
         }
 
-        $db->query('INSERT INTO blog_tags (name, slug, created_at, updated_at) VALUES (?,?,NOW(),NOW())', [$data['name'], $data['slug']]);
+        $db->query('INSERT INTO blog_tags (name, slug, created_at) VALUES (?,?,NOW())', [$data['name'], $data['slug']]);
         $id  = (int) $db->lastInsertId();
         $row = $db->query('SELECT * FROM blog_tags WHERE id=?', [$id])->fetch();
 
@@ -56,11 +55,11 @@ class BlogTagController extends Controller
         $err  = $this->validate($data, ['name' => 'required|string|max:255', 'slug' => 'required|string|max:255']);
         if ($err) return $err;
 
-        if (!$db->query('SELECT id FROM blog_tags WHERE id=? AND deleted_at IS NULL', [$id])->fetch()) {
+        if (!$db->query('SELECT id FROM blog_tags WHERE id=?', [$id])->fetch()) {
             throw new HttpException(404, 'Tag not found.');
         }
 
-        $db->query('UPDATE blog_tags SET name=?, slug=?, updated_at=NOW() WHERE id=?', [$data['name'], $data['slug'], $id]);
+        $db->query('UPDATE blog_tags SET name=?, slug=? WHERE id=?', [$data['name'], $data['slug'], $id]);
 
         return $this->success(['id' => $id, 'name' => $data['name'], 'slug' => $data['slug']]);
     }
@@ -69,10 +68,11 @@ class BlogTagController extends Controller
     {
         $db = app_database();
         $id = (int) $request->param('id');
-        if (!$db->query('SELECT id FROM blog_tags WHERE id=? AND deleted_at IS NULL', [$id])->fetch()) {
+        if (!$db->query('SELECT id FROM blog_tags WHERE id=?', [$id])->fetch()) {
             throw new HttpException(404, 'Tag not found.');
         }
-        $db->query('UPDATE blog_tags SET deleted_at=NOW() WHERE id=?', [$id]);
+        // Hard delete — blog_post_tags FK is ON DELETE CASCADE so pivot rows are removed
+        $db->query('DELETE FROM blog_tags WHERE id=?', [$id]);
         return $this->noContent();
     }
 }

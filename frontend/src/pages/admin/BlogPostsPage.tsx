@@ -60,7 +60,7 @@ export default function BlogPostsPage() {
     {
       key: 'category',
       header: 'Category',
-      render: (p) => p.categories[0]?.name ?? <span className="text-taupe text-xs">—</span>,
+      render: (p) => p.categories[0]?.name ?? <span className="text-taupe text-xs">-</span>,
     },
     {
       key: 'status',
@@ -73,7 +73,7 @@ export default function BlogPostsPage() {
       render: (p) =>
         p.published_at
           ? new Date(p.published_at).toLocaleDateString()
-          : <span className="text-taupe text-xs">—</span>,
+          : <span className="text-taupe text-xs">-</span>,
     },
     {
       key: 'actions',
@@ -136,10 +136,13 @@ export default function BlogPostsPage() {
         <div className="relative">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-taupe" />
           <input
-            type="text"
+            id="admin-blog-search"
+            name="admin_blog_search"
+            type="search"
+            autoComplete="search"
             value={q}
             onChange={(e) => { setQ(e.target.value); setPage(1); }}
-            placeholder="Search posts…"
+            placeholder="Search posts..."
             className="pl-9 pr-3 py-1.5 border border-cream rounded-lg text-sm font-body focus:outline-none focus:ring-2 focus:ring-bronze"
           />
         </div>

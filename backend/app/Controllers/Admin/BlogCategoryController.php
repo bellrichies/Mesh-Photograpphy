@@ -17,7 +17,6 @@ class BlogCategoryController extends Controller
             'SELECT bc.id, bc.name, bc.slug, COUNT(bp.id) AS post_count
              FROM blog_categories bc
              LEFT JOIN blog_posts bp ON bp.category_id=bc.id AND bp.deleted_at IS NULL
-             WHERE bc.deleted_at IS NULL
              GROUP BY bc.id, bc.name, bc.slug
              ORDER BY bc.name ASC'
         )->fetchAll();
@@ -37,7 +36,7 @@ class BlogCategoryController extends Controller
         if ($err) return $err;
 
         $db = app_database();
-        if ($db->query('SELECT id FROM blog_categories WHERE slug=? AND deleted_at IS NULL', [$data['slug']])->fetch()) {
+        if ($db->query('SELECT id FROM blog_categories WHERE slug=?', [$data['slug']])->fetch()) {
             return $this->validationError(['slug' => ['Slug already exists.']]);
         }
 
@@ -56,7 +55,7 @@ class BlogCategoryController extends Controller
         $err  = $this->validate($data, ['name' => 'required|string|max:255', 'slug' => 'required|string|max:255']);
         if ($err) return $err;
 
-        if (!$db->query('SELECT id FROM blog_categories WHERE id=? AND deleted_at IS NULL', [$id])->fetch()) {
+        if (!$db->query('SELECT id FROM blog_categories WHERE id=?', [$id])->fetch()) {
             throw new HttpException(404, 'Category not found.');
         }
 
@@ -69,10 +68,11 @@ class BlogCategoryController extends Controller
     {
         $db = app_database();
         $id = (int) $request->param('id');
-        if (!$db->query('SELECT id FROM blog_categories WHERE id=? AND deleted_at IS NULL', [$id])->fetch()) {
+        if (!$db->query('SELECT id FROM blog_categories WHERE id=?', [$id])->fetch()) {
             throw new HttpException(404, 'Category not found.');
         }
-        $db->query('UPDATE blog_categories SET deleted_at=NOW() WHERE id=?', [$id]);
+        // Hard delete — blog_posts FK is ON DELETE SET NULL so posts are unaffected
+        $db->query('DELETE FROM blog_categories WHERE id=?', [$id]);
         return $this->noContent();
     }
 }

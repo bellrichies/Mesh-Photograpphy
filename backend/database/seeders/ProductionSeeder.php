@@ -111,9 +111,10 @@ class ProductionSeeder
     private function seedCoreCmsPages(): void
     {
         $pages = [
-            ['title' => 'About',           'slug' => 'about',            'status' => 'published'],
-            ['title' => 'Privacy Policy',  'slug' => 'privacy-policy',   'status' => 'published'],
-            ['title' => 'Terms of Service','slug' => 'terms-of-service', 'status' => 'published'],
+            ['title' => 'About',          'slug' => 'about'],
+            ['title' => 'Privacy Policy', 'slug' => 'privacy-policy'],
+            ['title' => 'Terms',          'slug' => 'terms'],
+            ['title' => 'Cookie Policy',  'slug' => 'cookie-policy'],
         ];
 
         $created = 0;
@@ -123,8 +124,14 @@ class ProductionSeeder
             if ($exists->fetchColumn()) continue;
 
             $this->pdo->prepare(
-                'INSERT INTO pages (title, slug, status, created_at, updated_at) VALUES (?, ?, ?, NOW(), NOW())'
-            )->execute([$page['title'], $page['slug'], $page['status']]);
+                'INSERT INTO pages (title, slug, body, is_published, seo_title, seo_description, created_at, updated_at)
+                 VALUES (?, ?, NULL, 1, ?, ?, NOW(), NOW())'
+            )->execute([
+                $page['title'],
+                $page['slug'],
+                $page['title'] . ' | Mesh Photography',
+                'Default CMS page for ' . $page['title'] . '.',
+            ]);
 
             $created++;
         }
@@ -143,19 +150,25 @@ class ProductionSeeder
             ['key' => 'social_instagram',     'value' => '',                        'group' => 'social'],
             ['key' => 'social_facebook',      'value' => '',                        'group' => 'social'],
             ['key' => 'social_twitter',       'value' => '',                        'group' => 'social'],
+            ['key' => 'social_x',             'value' => '',                        'group' => 'social'],
+            ['key' => 'social_youtube',       'value' => '',                        'group' => 'social'],
+            ['key' => 'social_pinterest',     'value' => '',                        'group' => 'social'],
+            ['key' => 'social_linkedin',      'value' => '',                        'group' => 'social'],
+            ['key' => 'social_tiktok',        'value' => '',                        'group' => 'social'],
             ['key' => 'booking_lead_time',    'value' => '7',                       'group' => 'booking'],
             ['key' => 'google_analytics_id',  'value' => '',                        'group' => 'analytics'],
         ];
 
         $created = 0;
         foreach ($defaults as $setting) {
-            $exists = $this->pdo->prepare('SELECT 1 FROM settings WHERE `key` = ?');
+            $exists = $this->pdo->prepare('SELECT 1 FROM site_settings WHERE key_name = ?');
             $exists->execute([$setting['key']]);
             if ($exists->fetchColumn()) continue;
 
             $this->pdo->prepare(
-                'INSERT INTO settings (`key`, `value`, `group`, created_at, updated_at) VALUES (?, ?, ?, NOW(), NOW())'
-            )->execute([$setting['key'], $setting['value'], $setting['group']]);
+                'INSERT INTO site_settings (key_name, value, type, group_name, created_at, updated_at)
+                 VALUES (?, ?, ?, ?, NOW(), NOW())'
+            )->execute([$setting['key'], $setting['value'], 'string', $setting['group']]);
 
             $created++;
         }
@@ -169,7 +182,7 @@ class ProductionSeeder
             'admin_users'    => 'SELECT COUNT(*) FROM admin_users WHERE status = ? AND deleted_at IS NULL',
             'roles'          => 'SELECT COUNT(*) FROM roles',
             'permissions'    => 'SELECT COUNT(*) FROM permissions',
-            'settings'       => 'SELECT COUNT(*) FROM settings',
+            'site_settings'  => 'SELECT COUNT(*) FROM site_settings',
         ];
 
         $pass = true;

@@ -22,12 +22,13 @@ class HeroSlideController extends Controller
     public function index(Request $request, Response $response): Response
     {
         $rows = app_database()->query(
-            'SELECT h.*, m.path AS cover_path, m.alt_text AS cover_alt,
+            'SELECT h.*, h.image_id AS cover_image_id,
+                    m.path AS cover_path, m.alt_text AS cover_alt,
                     m.uuid AS cover_uuid, m.original_name AS cover_original,
                     m.file_name AS cover_file, m.mime_type AS cover_mime,
                     m.file_size AS cover_size, m.width AS cover_width, m.height AS cover_height
              FROM hero_slides h
-             LEFT JOIN media m ON h.background_image_id = m.id AND m.deleted_at IS NULL
+             LEFT JOIN media m ON h.image_id = m.id AND m.deleted_at IS NULL
              WHERE h.deleted_at IS NULL
              ORDER BY h.sort_order ASC'
         )->fetchAll();
@@ -43,16 +44,16 @@ class HeroSlideController extends Controller
 
         $db = app_database();
         $db->query(
-            'INSERT INTO hero_slides (title, subtitle, background_image_id, cta_label, cta_url, sort_order, status, created_at, updated_at)
+            'INSERT INTO hero_slides (heading, subheading, image_id, cta_label, cta_url, sort_order, is_published, created_at, updated_at)
              VALUES (?,?,?,?,?,?,?,NOW(),NOW())',
             [
                 $data['title'],
-                $data['subtitle']             ?? null,
-                $data['background_image_id']  ?? null,
-                $data['cta_label']            ?? null,
-                $data['cta_url']              ?? null,
-                $data['sort_order']           ?? 0,
-                $data['status']               ?? 'draft',
+                $data['subtitle']            ?? null,
+                $data['background_image_id'] ?? null,
+                $data['cta_label']           ?? null,
+                $data['cta_url']             ?? null,
+                $data['sort_order']          ?? 0,
+                ($data['status'] ?? 'draft') === 'published' ? 1 : 0,
             ]
         );
 
@@ -70,7 +71,7 @@ class HeroSlideController extends Controller
         if ($err) return $err;
 
         $db->query(
-            'UPDATE hero_slides SET title=?,subtitle=?,background_image_id=?,cta_label=?,cta_url=?,sort_order=?,status=?,updated_at=NOW() WHERE id=?',
+            'UPDATE hero_slides SET heading=?,subheading=?,image_id=?,cta_label=?,cta_url=?,sort_order=?,is_published=?,updated_at=NOW() WHERE id=?',
             [
                 $data['title'],
                 $data['subtitle']            ?? null,
@@ -78,7 +79,7 @@ class HeroSlideController extends Controller
                 $data['cta_label']           ?? null,
                 $data['cta_url']             ?? null,
                 $data['sort_order']          ?? 0,
-                $data['status']              ?? 'draft',
+                ($data['status'] ?? 'draft') === 'published' ? 1 : 0,
                 $id,
             ]
         );
@@ -98,12 +99,13 @@ class HeroSlideController extends Controller
     private function findOrFail(\App\Core\Database $db, int $id): array
     {
         $row = $db->query(
-            'SELECT h.*, m.path AS cover_path, m.alt_text AS cover_alt,
+            'SELECT h.*, h.image_id AS cover_image_id,
+                    m.path AS cover_path, m.alt_text AS cover_alt,
                     m.uuid AS cover_uuid, m.original_name AS cover_original,
                     m.file_name AS cover_file, m.mime_type AS cover_mime,
                     m.file_size AS cover_size, m.width AS cover_width, m.height AS cover_height
              FROM hero_slides h
-             LEFT JOIN media m ON h.background_image_id = m.id AND m.deleted_at IS NULL
+             LEFT JOIN media m ON h.image_id = m.id AND m.deleted_at IS NULL
              WHERE h.id=? AND h.deleted_at IS NULL LIMIT 1',
             [$id]
         )->fetch();
@@ -115,17 +117,17 @@ class HeroSlideController extends Controller
     private function formatRow(array $row): array
     {
         return [
-            'id'                   => (int)$row['id'],
-            'title'                => $row['title'],
-            'subtitle'             => $row['subtitle']            ?? null,
-            'background_image'     => $this->fmt->formatCover($row),
-            'background_image_id'  => $row['background_image_id'] ?? null,
-            'cta_label'            => $row['cta_label']           ?? null,
-            'cta_url'              => $row['cta_url']             ?? null,
-            'sort_order'           => (int)$row['sort_order'],
-            'status'               => $row['status'],
-            'created_at'           => $row['created_at'],
-            'updated_at'           => $row['updated_at'],
+            'id'                  => (int)$row['id'],
+            'title'               => $row['heading'],
+            'subtitle'            => $row['subheading']  ?? null,
+            'background_image'    => $this->fmt->formatCover($row),
+            'background_image_id' => $row['image_id']   ?? null,
+            'cta_label'           => $row['cta_label']  ?? null,
+            'cta_url'             => $row['cta_url']    ?? null,
+            'sort_order'          => (int)$row['sort_order'],
+            'status'              => $row['is_published'] ? 'published' : 'draft',
+            'created_at'          => $row['created_at'],
+            'updated_at'          => $row['updated_at'],
         ];
     }
 }

@@ -13,7 +13,7 @@ class HttpException extends RuntimeException
         string $message = '',
         private readonly array $errors = []
     ) {
-        parent::__construct($message);
+        parent::__construct($message, $statusCode);
     }
 
     public function getStatusCode(): int

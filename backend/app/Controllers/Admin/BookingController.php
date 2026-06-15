@@ -54,7 +54,8 @@ class BookingController extends Controller
         if (!$row) throw new HttpException(404, 'Booking not found.');
 
         $status  = $request->json()['status'] ?? '';
-        $allowed = ['new', 'contacted', 'quoted', 'booked', 'cancelled'];
+        // Valid enum values in booking_requests.status
+        $allowed = ['new', 'contacted', 'booked', 'declined', 'cancelled'];
         if (!in_array($status, $allowed, true)) {
             return $this->validationError(['status' => ['Invalid status value.']]);
         }
@@ -69,13 +70,13 @@ class BookingController extends Controller
             'id'             => (int)$row['id'],
             'name'           => $row['name'],
             'email'          => $row['email'],
-            'phone'          => $row['phone']          ?? null,
-            'event_type'     => $row['event_type'],
-            'event_date'     => $row['event_date']     ?? null,
-            'event_location' => $row['event_location'] ?? null,
-            'message'        => $row['message'],
+            'phone'          => $row['phone']      ?? null,
+            'event_type'     => $row['event_type'] ?? null,
+            'event_date'     => $row['event_date'] ?? null,
+            'event_location' => $row['location']   ?? null,  // DB column: location
+            'message'        => $row['notes']      ?? null,  // DB column: notes
             'status'         => $row['status'],
-            'ip_address'     => $row['ip_address']     ?? null,
+            'ip_address'     => $row['ip_address'] ?? null,
             'created_at'     => $row['created_at'],
         ];
     }

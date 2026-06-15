@@ -107,16 +107,16 @@ function UserModal({ user, onClose }: { user?: AdminUser; onClose: () => void })
         <form onSubmit={handleSubmit(onSubmit as never)} className="space-y-4">
           {!isEdit && (
             <FormField label="Email" htmlFor="email" error={(errors as { email?: { message?: string } }).email?.message} required>
-              <input id="email" type="email" className={fieldClass(!!(errors as { email?: unknown }).email)} {...register('email')} />
+              <input id="email" type="email" autoComplete="email" className={fieldClass(!!(errors as { email?: unknown }).email)} {...register('email')} />
             </FormField>
           )}
 
           <div className="grid grid-cols-2 gap-4">
             <FormField label="First Name" htmlFor="first_name" error={errors.first_name?.message} required>
-              <input id="first_name" type="text" className={fieldClass(!!errors.first_name)} {...register('first_name')} />
+              <input id="first_name" type="text" autoComplete="given-name" className={fieldClass(!!errors.first_name)} {...register('first_name')} />
             </FormField>
             <FormField label="Last Name" htmlFor="last_name" error={errors.last_name?.message} required>
-              <input id="last_name" type="text" className={fieldClass(!!errors.last_name)} {...register('last_name')} />
+              <input id="last_name" type="text" autoComplete="family-name" className={fieldClass(!!errors.last_name)} {...register('last_name')} />
             </FormField>
           </div>
 
@@ -141,6 +141,8 @@ function UserModal({ user, onClose }: { user?: AdminUser; onClose: () => void })
                     className="flex items-center gap-2 cursor-pointer font-body text-sm text-charcoal"
                   >
                     <input
+                      id={`role-${role.id}`}
+                      name="role_ids"
                       type="checkbox"
                       className="rounded border-cream accent-bronze"
                       checked={roleIds.includes(role.id)}
@@ -148,13 +150,13 @@ function UserModal({ user, onClose }: { user?: AdminUser; onClose: () => void })
                     />
                     <span className="capitalize">{role.name}</span>
                     {role.description && (
-                      <span className="text-taupe text-xs">— {role.description}</span>
+                      <span className="text-taupe text-xs">- {role.description}</span>
                     )}
                   </label>
                 ))}
               </div>
               {roleIds.length === 0 && (
-                <p className="mt-1 text-xs text-taupe font-body">No role assigned — user will have minimal access.</p>
+                <p className="mt-1 text-xs text-taupe font-body">No role assigned - user will have minimal access.</p>
               )}
             </FormField>
           )}
@@ -162,7 +164,7 @@ function UserModal({ user, onClose }: { user?: AdminUser; onClose: () => void })
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-body text-charcoal border border-cream rounded-lg hover:bg-ivory-warm">Cancel</button>
             <button type="submit" disabled={isSubmitting} className="px-4 py-2 text-sm font-body bg-bronze text-ivory rounded-lg hover:bg-bronze-light disabled:opacity-60">
-              {isSubmitting ? 'Saving…' : 'Save'}
+              {isSubmitting ? 'Saving...' : 'Save'}
             </button>
           </div>
         </form>

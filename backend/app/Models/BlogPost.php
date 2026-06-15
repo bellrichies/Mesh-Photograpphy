@@ -184,7 +184,6 @@ class BlogPost
              FROM blog_categories bc
              LEFT JOIN blog_posts bp ON bp.category_id = bc.id
                  AND bp.deleted_at IS NULL AND bp.is_published = 1
-             WHERE bc.deleted_at IS NULL
              GROUP BY bc.id, bc.name, bc.slug
              ORDER BY bc.name ASC'
         )->fetchAll();
@@ -193,7 +192,7 @@ class BlogPost
     public function findCategoryBySlug(string $slug): ?array
     {
         return $this->db->query(
-            'SELECT * FROM blog_categories WHERE slug = ? AND deleted_at IS NULL LIMIT 1',
+            'SELECT * FROM blog_categories WHERE slug = ? LIMIT 1',
             [$slug]
         )->fetch() ?: null;
     }
@@ -206,7 +205,6 @@ class BlogPost
              LEFT JOIN blog_post_tags bpt ON bt.id = bpt.tag_id
              LEFT JOIN blog_posts bp ON bpt.post_id = bp.id
                  AND bp.deleted_at IS NULL AND bp.is_published = 1
-             WHERE bt.deleted_at IS NULL
              GROUP BY bt.id, bt.name, bt.slug
              ORDER BY bt.name ASC'
         )->fetchAll();
@@ -215,7 +213,7 @@ class BlogPost
     public function findTagBySlug(string $slug): ?array
     {
         return $this->db->query(
-            'SELECT * FROM blog_tags WHERE slug = ? AND deleted_at IS NULL LIMIT 1',
+            'SELECT * FROM blog_tags WHERE slug = ? LIMIT 1',
             [$slug]
         )->fetch() ?: null;
     }

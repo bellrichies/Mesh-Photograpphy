@@ -18,5 +18,6 @@ abstract class TestCase extends BaseTestCase
     protected function setConfig(string $key, mixed $value): void
     {
         $GLOBALS['__test_config'][$key] = $value;
+        \App\Core\Config::set($key, $value);
     }
 }

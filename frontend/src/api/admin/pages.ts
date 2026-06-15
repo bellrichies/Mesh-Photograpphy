@@ -3,18 +3,37 @@ import { apiClient } from '@/api/client';
 import type { ApiResponse } from '@/types/api';
 import type { CmsPage } from '@/types/models';
 
+export interface AdminPageSectionPayload {
+  section_key:  string;
+  section_type: string;
+  title?:       string | null;
+  content?:     string | null;
+  media_id?:    number | null;
+  settings?:    Record<string, unknown>;
+  sort_order:   number;
+}
+
 export interface AdminPagePayload {
-  title: string;
-  slug: string;
-  template?: string | null;
-  body?: string | null;
-  is_published: boolean;
-  seo_title?: string | null;
+  title:           string;
+  slug:            string;
+  template?:       string | null;
+  body?:           string | null;
+  is_published:    boolean;
+  seo_title?:      string | null;
   seo_description?: string | null;
+  canonical_url?:  string | null;
+  og_title?:       string | null;
+  og_description?: string | null;
+  og_image_id?:    number | null;
+  seo_robots?:     string | null;
+  schema_markup?:  string | null;
+  sections?:       AdminPageSectionPayload[];
 }
 
 export interface AdminPage extends CmsPage {
+  body?: string | null;
   status: 'published' | 'draft';
+  is_published?: boolean;
   created_at: string;
   updated_at: string;
 }

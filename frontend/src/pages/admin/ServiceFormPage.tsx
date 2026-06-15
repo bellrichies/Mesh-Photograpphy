@@ -85,7 +85,7 @@ export default function ServiceFormPage() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div className="bg-white rounded-xl border border-cream p-6 space-y-5">
           <FormField label="Title" htmlFor="title" error={errors.title?.message} required>
-            <input id="title" type="text" className={fieldClass(!!errors.title)} {...register('title')} />
+            <input id="title" type="text" autoComplete="off" className={fieldClass(!!errors.title)} {...register('title')} />
           </FormField>
           <FormField label="Slug" htmlFor="slug" required>
             <Controller name="slug" control={control} render={({ field }) => (
@@ -93,7 +93,7 @@ export default function ServiceFormPage() {
             )} />
           </FormField>
           <FormField label="Short Description" htmlFor="short_description" hint="Shown on the services index page.">
-            <textarea id="short_description" rows={2} className={fieldClass(false)} {...register('short_description')} />
+            <textarea id="short_description" rows={2} autoComplete="off" className={fieldClass(false)} {...register('short_description')} />
           </FormField>
           <FormField label="Full Description" htmlFor="description" hint="Shown on the service detail page. Supports rich formatting.">
             <Controller
@@ -103,20 +103,20 @@ export default function ServiceFormPage() {
                 <RichTextEditor
                   value={field.value ?? ''}
                   onChange={field.onChange}
-                  placeholder="Describe this service in detail…"
+                  placeholder="Describe this service in detail..."
                   minHeight={250}
                 />
               )}
             />
           </FormField>
           <FormField label="Price Display" htmlFor="price_display" hint='e.g. "Starting from $800"'>
-            <input id="price_display" type="text" className={fieldClass(false)} {...register('price_display')} />
+            <input id="price_display" type="text" autoComplete="off" className={fieldClass(false)} {...register('price_display')} />
           </FormField>
           <FormField label="Sort Order" htmlFor="sort_order">
             <input id="sort_order" type="number" min={0} className={fieldClass(false)} {...register('sort_order')} />
           </FormField>
           <label className="flex items-center gap-2 cursor-pointer font-body text-sm text-charcoal">
-            <input type="checkbox" className="rounded border-cream accent-bronze" {...register('is_published')} />
+            <input id="service-is-published" type="checkbox" className="rounded border-cream accent-bronze" {...register('is_published')} />
             Published
           </label>
         </div>

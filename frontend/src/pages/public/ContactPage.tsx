@@ -52,12 +52,12 @@ export default function ContactPage() {
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
       <section className="relative bg-charcoal overflow-hidden pt-[72px]">
         <div className="absolute inset-0 bg-gradient-to-br from-espresso via-charcoal to-ink opacity-95" />
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
-          <p className="font-body text-xs tracking-[0.2em] uppercase text-bronze mb-4">Contact</p>
-          <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl text-ivory font-light leading-[1.05] max-w-2xl">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
+          <p className="font-body text-xs tracking-[0.2em] uppercase text-bronze mb-3">Contact</p>
+          <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl text-ivory font-light leading-[1.05] max-w-2xl">
             Let&apos;s Start a Conversation
           </h1>
-          <p className="font-body text-base text-ivory/60 mt-6 max-w-lg leading-relaxed">
+          <p className="font-body text-sm text-ivory/60 mt-4 max-w-lg leading-relaxed">
             We&apos;d love to hear about your vision. Reach out and let&apos;s make something
             beautiful together.
           </p>
@@ -65,11 +65,11 @@ export default function ContactPage() {
       </section>
 
       {/* ── Main content ─────────────────────────────────────────────────── */}
-      <section className="bg-ivory py-20 lg:py-28">
+      <section className="bg-ivory py-14 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-16 lg:gap-20 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 lg:gap-16 items-start">
 
-            {/* Contact Info — left 2/5 */}
+            {/* Contact Info - left 2/5 */}
             <div className="lg:col-span-2 space-y-0">
               <h2 className="font-display text-3xl text-charcoal font-light mb-10">
                 Find Us
@@ -128,7 +128,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <p className="font-body text-xs tracking-[0.12em] uppercase text-taupe mb-1.5">Studio Hours</p>
-                    <p className="font-display text-lg text-charcoal">Mon – Thu: 10 AM – 5 PM</p>
+                    <p className="font-display text-lg text-charcoal">Mon - Thu: 10 AM - 5 PM</p>
                     <p className="font-body text-xs text-taupe mt-1">Available for sessions on weekends</p>
                   </div>
                 </div>
@@ -151,7 +151,7 @@ export default function ContactPage() {
               </div>
             </div>
 
-            {/* Contact Form — right 3/5 */}
+            {/* Contact Form - right 3/5 */}
             <div className="lg:col-span-3">
               <h2 className="font-display text-3xl text-charcoal font-light mb-10">
                 Send a Message
@@ -166,6 +166,7 @@ export default function ContactPage() {
                     <input
                       id="name"
                       type="text"
+                      autoComplete="name"
                       {...register('name')}
                       className={inputClass}
                       placeholder="Your full name"
@@ -182,6 +183,7 @@ export default function ContactPage() {
                     <input
                       id="email"
                       type="email"
+                      autoComplete="email"
                       {...register('email')}
                       className={inputClass}
                       placeholder="your@email.com"
@@ -198,6 +200,7 @@ export default function ContactPage() {
                     <input
                       id="phone"
                       type="tel"
+                      autoComplete="tel"
                       {...register('phone')}
                       className={inputClass}
                       placeholder="Optional"
@@ -209,6 +212,7 @@ export default function ContactPage() {
                     <input
                       id="subject"
                       type="text"
+                      autoComplete="off"
                       {...register('subject')}
                       className={inputClass}
                       placeholder="How can we help?"
@@ -223,9 +227,10 @@ export default function ContactPage() {
                   <textarea
                     id="message"
                     rows={7}
+                    autoComplete="off"
                     {...register('message')}
                     className={inputClass + ' resize-none'}
-                    placeholder="Tell us about your project, date, or any questions you have…"
+                    placeholder="Tell us about your project, date, or any questions you have..."
                   />
                   {errors.message && (
                     <p className="mt-1.5 font-body text-xs text-red-600">{errors.message.message}</p>
@@ -237,7 +242,7 @@ export default function ContactPage() {
                   disabled={isPending}
                   className="w-full sm:w-auto px-12 py-4 bg-bronze text-ivory font-body text-xs tracking-[0.18em] uppercase hover:bg-bronze-dark transition-colors duration-150 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  {isPending ? 'Sending…' : 'Send Message'}
+                  {isPending ? 'Sending...' : 'Send Message'}
                 </button>
               </form>
             </div>
