@@ -32,7 +32,8 @@ class BlogService
         if (!$row) return null;
 
         $tags    = $this->model->getTagsForPost((int) $row['id']);
-        $related = $this->model->getRelated((int) $row['id'], $row['cat_id'] ? (int) $row['cat_id'] : null);
+        $categoryId = !empty($row['cat_id']) ? (int) $row['cat_id'] : null;
+        $related = $this->model->getRelated((int) $row['id'], $categoryId);
         $appUrl  = rtrim($_ENV['APP_URL'] ?? '', '/');
 
         return array_merge($this->formatSummary($row), [
@@ -98,7 +99,9 @@ class BlogService
         $cover = !empty($row['cover_path']) ? $this->fmt->formatCover($row) : null;
 
         $status = 'draft';
-        if ($row['is_published']) $status = 'published';
+        if (!empty($row['is_published'])) $status = 'published';
+
+        $categoryId = !empty($row['cat_id']) ? (int) $row['cat_id'] : null;
 
         return [
             'id'           => (int) $row['id'],
@@ -108,8 +111,8 @@ class BlogService
             'cover'        => $cover,
             'published_at' => $row['published_at'] ?? null,
             'status'       => $status,
-            'categories'   => $row['cat_id'] ? [[
-                'id'   => (int) $row['cat_id'],
+            'categories'   => $categoryId ? [[
+                'id'   => $categoryId,
                 'name' => $row['cat_name'] ?? '',
                 'slug' => $row['cat_slug'] ?? '',
             ]] : [],

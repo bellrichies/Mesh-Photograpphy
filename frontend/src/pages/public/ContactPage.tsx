@@ -22,6 +22,39 @@ const inputClass =
 
 const labelClass = 'block font-body text-xs tracking-[0.1em] uppercase text-charcoal mb-2';
 
+function getEmbeddableGoogleMapUrl(value: string | null | undefined): string | null {
+  if (!value) return null;
+
+  try {
+    const url = new URL(value);
+    const host = url.hostname.toLowerCase();
+    const isGoogleMapsHost = ['www.google.com', 'google.com', 'maps.google.com'].includes(host);
+    const isEmbedPath = url.pathname.startsWith('/maps/embed');
+    const isOutputEmbed = url.pathname.startsWith('/maps') && url.searchParams.get('output') === 'embed';
+
+    return isGoogleMapsHost && (isEmbedPath || isOutputEmbed) ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
+function getMapsHref(address: string | null | undefined, mapUrl: string | null | undefined): string | null {
+  if (address) {
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+  }
+
+  if (!mapUrl) return null;
+
+  try {
+    const url = new URL(mapUrl);
+    const host = url.hostname.toLowerCase();
+    const isGoogleMapsHost = ['www.google.com', 'google.com', 'maps.google.com', 'maps.app.goo.gl'].includes(host);
+    return isGoogleMapsHost && (url.pathname.startsWith('/maps') || host === 'maps.app.goo.gl') ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function ContactPage() {
   const { data: settings } = usePublicSettings();
   const { mutateAsync, isPending } = useSubmitContact();
@@ -44,6 +77,8 @@ export default function ContactPage() {
   const email       = settings?.contact.email;
   const address     = settings?.contact.address;
   const mapEmbedUrl = settings?.contact.map_embed_url ?? null;
+  const embeddableMapUrl = getEmbeddableGoogleMapUrl(mapEmbedUrl);
+  const mapsHref = getMapsHref(address, mapEmbedUrl);
 
   return (
     <>
@@ -52,7 +87,7 @@ export default function ContactPage() {
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
       <section className="relative bg-charcoal overflow-hidden pt-[72px]">
         <div className="absolute inset-0 bg-gradient-to-br from-espresso via-charcoal to-ink opacity-95" />
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
+        <div className="relative z-10 site-container py-8 lg:py-10">
           <p className="font-body text-xs tracking-[0.2em] uppercase text-bronze mb-3">Contact</p>
           <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl text-ivory font-light leading-[1.05] max-w-2xl">
             Let&apos;s Start a Conversation
@@ -66,7 +101,7 @@ export default function ContactPage() {
 
       {/* ── Main content ─────────────────────────────────────────────────── */}
       <section className="bg-ivory py-14 lg:py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 lg:gap-16 items-start">
 
             {/* Contact Info - left 2/5 */}
@@ -251,15 +286,15 @@ export default function ContactPage() {
       </section>
 
       {/* ── Google Map ───────────────────────────────────────────────────── */}
-      {mapEmbedUrl && (
+      {embeddableMapUrl && (
         <section className="bg-sand">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="site-container py-16">
             <h2 className="font-display text-3xl text-charcoal font-light mb-8">Find Our Studio</h2>
           </div>
           <div className="relative w-full overflow-hidden" style={{ paddingTop: '38%', minHeight: '320px' }}>
             <iframe
               title="Mesh Photography studio location"
-              src={mapEmbedUrl}
+              src={embeddableMapUrl}
               className="absolute inset-0 w-full h-full border-0"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
@@ -270,15 +305,15 @@ export default function ContactPage() {
       )}
 
       {/* Fallback map CTA when no embed URL is set */}
-      {!mapEmbedUrl && address && (
+      {!embeddableMapUrl && mapsHref && (
         <section className="bg-charcoal py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center gap-6 justify-between">
+          <div className="site-container flex flex-col sm:flex-row items-center gap-6 justify-between">
             <div>
               <p className="font-body text-xs tracking-widest uppercase text-bronze mb-2">Find Us</p>
-              <p className="font-display text-2xl text-ivory font-light">{address}</p>
+              <p className="font-display text-2xl text-ivory font-light">{address ?? 'Open our studio location in Google Maps'}</p>
             </div>
             <a
-              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
+              href={mapsHref}
               target="_blank"
               rel="noopener noreferrer"
               className="shrink-0 px-8 py-3 border border-ivory/40 text-ivory font-body text-xs tracking-widest uppercase hover:bg-ivory hover:text-charcoal transition-colors duration-150"

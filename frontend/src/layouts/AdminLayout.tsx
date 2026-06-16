@@ -4,7 +4,7 @@ import { useAuth } from '@/store/AuthContext';
 import {
   LayoutDashboard, Images, FileText, Image, Layers, Star,
   SlidersHorizontal, MessageSquare, Calendar, Settings, Users,
-  Menu, X, LogOut, ChevronRight, ClipboardList,
+  Menu, X, LogOut, ChevronRight, ClipboardList, Mail, UsersRound, Building2,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 
@@ -23,11 +23,14 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Pages', to: '/admin/pages', icon: <Layers size={18} />, permission: 'manage-pages' },
   { label: 'Services', to: '/admin/services', icon: <ChevronRight size={18} />, permission: 'manage-services' },
   { label: 'Testimonials', to: '/admin/testimonials', icon: <Star size={18} />, permission: 'manage-testimonials' },
+  { label: 'Team', to: '/admin/team', icon: <UsersRound size={18} />, permission: 'manage-pages' },
+  { label: 'Clients', to: '/admin/clients', icon: <Building2 size={18} />, permission: 'manage-pages' },
   { label: 'Hero Slides', to: '/admin/hero-slides', icon: <SlidersHorizontal size={18} />, permission: 'manage-pages' },
   { label: 'Inquiries', to: '/admin/inquiries', icon: <MessageSquare size={18} />, permission: 'manage-inquiries' },
   { label: 'Bookings', to: '/admin/bookings', icon: <Calendar size={18} />, permission: 'manage-inquiries' },
   { label: 'Settings', to: '/admin/settings', icon: <Settings size={18} />, permission: 'manage-settings' },
   { label: 'Users', to: '/admin/users', icon: <Users size={18} />, permission: 'manage-users' },
+  { label: 'Subscribers', to: '/admin/newsletter/subscribers', icon: <Mail size={18} /> },
   { label: 'Activity Log', to: '/admin/activity-log', icon: <ClipboardList size={18} /> },
 ];
 

@@ -22,18 +22,19 @@ function BlogPostCard({ post }: { post: BlogPost }) {
   return (
     <article className="group">
       <Link to={`/blog/${post.slug}`} tabIndex={-1} aria-hidden="true">
-        <div className="aspect-video overflow-hidden mb-4 bg-cream">
+        <div className="relative aspect-[3/4] overflow-hidden mb-5 bg-charcoal">
           {post.cover ? (
             <img
               src={post.cover.thumb_url ?? post.cover.url}
               alt={post.cover.alt_text ?? post.title}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+              className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.04]"
               loading="lazy"
-              width={480}
-              height={270}
+              width={600}
+              height={800}
+              decoding="async"
             />
           ) : (
-            <div className="w-full h-full bg-cream" />
+            <div className="w-full h-full bg-charcoal" />
           )}
         </div>
       </Link>
@@ -72,7 +73,7 @@ function BlogPostCard({ post }: { post: BlogPost }) {
 function BlogStoriesSkeleton() {
   return (
     <section className="bg-parchment py-16 lg:py-24">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="site-container">
         <div className="flex items-end justify-between mb-10">
           <div className="space-y-2">
             <div className="h-3 w-20 bg-cream animate-pulse rounded" />
@@ -82,7 +83,7 @@ function BlogStoriesSkeleton() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="space-y-3">
-              <div className="aspect-video bg-cream animate-pulse" />
+              <div className="aspect-[3/4] bg-cream animate-pulse" />
               <div className="h-3 w-16 bg-cream animate-pulse rounded" />
               <div className="h-5 w-3/4 bg-cream animate-pulse rounded" />
               <div className="h-3 w-full bg-cream animate-pulse rounded" />
@@ -109,7 +110,7 @@ export default function BlogStoriesSection({ posts, isLoading }: BlogStoriesSect
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
       )}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="site-container">
         <div className="flex items-end justify-between mb-10">
           <div>
             <span className="font-body text-xs tracking-[0.15em] uppercase text-taupe block mb-2">

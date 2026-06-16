@@ -25,6 +25,7 @@ class DashboardController extends Controller
         $inquiries    = $db->query('SELECT COUNT(*) AS total, SUM(is_read = 0) AS new_count, SUM(replied_at IS NOT NULL) AS in_progress FROM inquiries WHERE deleted_at IS NULL')->fetch();
         // booking_requests status enum: new, contacted, booked, declined, cancelled
         $bookings     = $db->query('SELECT COUNT(*) AS total, SUM(status = \'new\') AS new_count, SUM(status = \'contacted\') AS quoted FROM booking_requests WHERE deleted_at IS NULL')->fetch();
+        $subscribers  = $db->query("SELECT COUNT(*) AS total, SUM(status = 'active') AS active, SUM(status = 'unsubscribed') AS unsubscribed FROM newsletter_subscriptions")->fetch();
 
         return $this->success([
             'pages'        => ['total' => (int)($pages['total'] ?? 0),        'published' => (int)($pages['published'] ?? 0)],
@@ -36,6 +37,7 @@ class DashboardController extends Controller
             'hero_slides'  => ['total' => (int)($heroSlides['total'] ?? 0),    'published' => (int)($heroSlides['published'] ?? 0)],
             'inquiries'    => ['total' => (int)($inquiries['total'] ?? 0),     'new' => (int)($inquiries['new_count'] ?? 0), 'in_progress' => (int)($inquiries['in_progress'] ?? 0)],
             'bookings'     => ['total' => (int)($bookings['total'] ?? 0),      'new' => (int)($bookings['new_count'] ?? 0), 'quoted' => (int)($bookings['quoted'] ?? 0)],
+            'subscribers'  => ['total' => (int)($subscribers['total'] ?? 0),   'active' => (int)($subscribers['active'] ?? 0), 'unsubscribed' => (int)($subscribers['unsubscribed'] ?? 0)],
         ]);
     }
 }

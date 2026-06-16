@@ -4,14 +4,21 @@ declare(strict_types=1);
 
 use App\Core\Router;
 use App\Core\Middleware\JwtMiddleware;
+use App\Core\Middleware\AdminActivityLogMiddleware;
 use App\Core\Middleware\PermissionMiddleware;
 
 return function (Router $router): void {
-    $jwt  = [JwtMiddleware::class];
+    $jwt  = [JwtMiddleware::class, AdminActivityLogMiddleware::class];
     $perm = fn(string $p): array => [...$jwt, PermissionMiddleware::for($p)];
 
     // Dashboard
     $router->get('/api/v1/admin/dashboard', 'Admin\DashboardController@index')
+           ->middleware($jwt);
+
+    // Newsletter subscribers
+    $router->get('/api/v1/admin/newsletter/subscriptions', 'Admin\NewsletterSubscriptionController@index')
+           ->middleware($jwt);
+    $router->get('/api/v1/admin/newsletter/subscriptions/export', 'Admin\NewsletterSubscriptionController@export')
            ->middleware($jwt);
 
     // Galleries
@@ -127,6 +134,26 @@ return function (Router $router): void {
            ->middleware($perm('manage-testimonials'));
     $router->delete('/api/v1/admin/testimonials/{id}', 'Admin\TestimonialController@destroy')
            ->middleware($perm('manage-testimonials'));
+
+    // Team members (About page)
+    $router->get('/api/v1/admin/team-members',         'Admin\TeamMemberController@index')
+           ->middleware($perm('manage-pages'));
+    $router->post('/api/v1/admin/team-members',        'Admin\TeamMemberController@store')
+           ->middleware($perm('manage-pages'));
+    $router->put('/api/v1/admin/team-members/{id}',    'Admin\TeamMemberController@update')
+           ->middleware($perm('manage-pages'));
+    $router->delete('/api/v1/admin/team-members/{id}', 'Admin\TeamMemberController@destroy')
+           ->middleware($perm('manage-pages'));
+
+    // Clients (About page)
+    $router->get('/api/v1/admin/clients',         'Admin\ClientController@index')
+           ->middleware($perm('manage-pages'));
+    $router->post('/api/v1/admin/clients',        'Admin\ClientController@store')
+           ->middleware($perm('manage-pages'));
+    $router->put('/api/v1/admin/clients/{id}',    'Admin\ClientController@update')
+           ->middleware($perm('manage-pages'));
+    $router->delete('/api/v1/admin/clients/{id}', 'Admin\ClientController@destroy')
+           ->middleware($perm('manage-pages'));
 
     // Hero slides
     $router->get('/api/v1/admin/hero-slides',         'Admin\HeroSlideController@index')

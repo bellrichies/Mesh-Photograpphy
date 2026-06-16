@@ -88,7 +88,7 @@ export default function GalleryDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="pt-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="pt-24 site-container">
         <div className="h-8 w-48 bg-cream animate-pulse mb-10" />
         <div className="columns-2 md:columns-3 gap-px space-y-px">
           {Array.from({ length: 12 }).map((_, i) => (
@@ -123,7 +123,7 @@ export default function GalleryDetailPage() {
 
       <div className="pt-24 pb-20">
         {/* Header */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-10">
+        <div className="site-container mb-10">
           <Link
             to="/portfolio"
             className="inline-flex items-center gap-1.5 font-body text-sm text-taupe hover:text-bronze transition-colors mb-8"
@@ -146,7 +146,7 @@ export default function GalleryDetailPage() {
 
         {/* Editorial image grid */}
         {images.length > 0 ? (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="site-container">
             {isPhotoPortfolio ? (
               <EditorialGrid images={images} onOpen={openLightbox} />
             ) : (
@@ -154,14 +154,14 @@ export default function GalleryDetailPage() {
             )}
           </div>
         ) : (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="site-container">
             <p className="text-center font-body text-taupe py-20">No photos in this gallery yet.</p>
           </div>
         )}
 
         {/* Prev / Next gallery */}
         {(gallery.prev_gallery || gallery.next_gallery) && (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between mt-16 pt-8 border-t border-cream">
+          <div className="site-container flex items-center justify-between mt-16 pt-8 border-t border-cream">
             {gallery.prev_gallery ? (
               <Link
                 to={`/portfolio/${gallery.prev_gallery.slug}`}

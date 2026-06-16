@@ -79,12 +79,6 @@ class PageService
 
     private function formatSection(array $section): array
     {
-        $settings = null;
-        if (!empty($section['settings_json'])) {
-            $decoded = json_decode((string) $section['settings_json'], true);
-            $settings = is_array($decoded) ? $decoded : null;
-        }
-
         return [
             'id'           => (int) $section['id'],
             'section_key'  => $section['section_key'],
@@ -95,8 +89,22 @@ class PageService
             'media'        => !empty($section['media_path'])
                 ? $this->fmt->formatCover($section, 'media')
                 : null,
-            'settings'     => $settings ?? (object) [],
+            'settings'     => $this->formatSectionSettings($section['settings_json'] ?? null),
             'sort_order'   => (int) $section['sort_order'],
         ];
+    }
+
+    private function formatSectionSettings(?string $settingsJson): mixed
+    {
+        if ($settingsJson === null || trim($settingsJson) === '') {
+            return (object) [];
+        }
+
+        $decoded = json_decode($settingsJson, true);
+        if (!is_array($decoded) || $decoded === [] || array_is_list($decoded)) {
+            return (object) [];
+        }
+
+        return $decoded;
     }
 }

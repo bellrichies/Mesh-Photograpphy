@@ -9,7 +9,7 @@ export default function ServiceDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="pt-24 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="pt-24 site-container-readable">
         <div className="h-96 bg-cream rounded-2xl animate-pulse mb-8" />
         <div className="space-y-4">
           {Array.from({ length: 3 }).map((_, i) => (
@@ -27,7 +27,7 @@ export default function ServiceDetailPage() {
       <PageMeta title={service.title} seo={service.seo} />
 
       <div className="pt-24 pb-20">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container-readable">
           <Link
             to="/services"
             className="inline-flex items-center gap-1.5 font-body text-sm text-taupe hover:text-bronze transition-colors mb-8"

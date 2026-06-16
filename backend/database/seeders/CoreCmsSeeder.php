@@ -20,6 +20,7 @@ class CoreCmsSeeder
             ['social_youtube',       '',                                 'string',  'social'],
             ['social_linkedin',      '',                                 'string',  'social'],
             ['social_tiktok',        '',                                 'string',  'social'],
+            ['social_whatsapp',      '',                                 'string',  'social'],
             ['hero_heading',         'Timeless Moments',                 'string',  'hero'],
             ['hero_subheading',      'Professional photography for life\'s most meaningful events.', 'string', 'hero'],
             ['about_heading',        'About the Artist',                 'string',  'about'],

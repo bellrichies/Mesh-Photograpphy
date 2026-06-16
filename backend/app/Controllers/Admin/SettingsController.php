@@ -46,6 +46,7 @@ class SettingsController extends Controller
                 'pinterest' => $raw['social_pinterest'] ?? '',
                 'linkedin'  => $raw['social_linkedin']  ?? '',
                 'tiktok'    => $raw['social_tiktok']    ?? '',
+                'whatsapp'  => $raw['social_whatsapp']  ?? '',
             ],
             'seo' => [
                 'default_title'       => $raw['seo_default_title']       ?? $raw['default_seo_title']       ?? '',
@@ -76,51 +77,60 @@ class SettingsController extends Controller
             'DM Serif Display', 'EB Garamond',
         ];
 
+        $updates = [];
+        $errors = [];
+
         foreach ($data as $group => $keys) {
             if (!is_array($keys)) continue;
             foreach ($keys as $key => $value) {
                 $value = (string) $value;
 
-                // Validate theme colour values to prevent CSS injection
-                if ($group === 'theme' && in_array($key, $allowedColorKeys, true)) {
-                    if (!preg_match('/^#[0-9A-Fa-f]{3}(?:[0-9A-Fa-f]{3}(?:[0-9A-Fa-f]{2})?)?$/', $value)) {
-                        continue;
-                    }
+                $validationError = $this->validateSettingValue(
+                    (string) $group,
+                    (string) $key,
+                    $value,
+                    $allowedColorKeys,
+                    $allowedFontKeys,
+                    $allowedFonts
+                );
+
+                if ($validationError !== null) {
+                    $errors["{$group}.{$key}"] = $validationError;
+                    continue;
                 }
 
-                // Validate theme font values against allowlist
-                if ($group === 'theme' && in_array($key, $allowedFontKeys, true)) {
-                    if (!in_array($value, $allowedFonts, true)) {
-                        continue;
-                    }
-                }
+                $updates[] = [
+                    'key_name' => $this->resolveDbKey((string) $group, (string) $key),
+                    'value' => $value,
+                    'group_name' => (string) $group,
+                ];
+            }
+        }
 
-                if ($this->isUrlField((string) $group, (string) $key) && $value !== '') {
-                    if (!filter_var($value, FILTER_VALIDATE_URL)) {
-                        continue;
-                    }
-                }
+        if (!empty($errors)) {
+            return $this->validationError($errors);
+        }
 
-                $dbKey   = $this->resolveDbKey((string) $group, (string) $key);
-                $dbGroup = (string) $group;
+        foreach ($updates as $update) {
+            $dbKey = $update['key_name'];
+            $value = $update['value'];
 
-                // Upsert: update existing row, or insert a new one
-                $exists = $db->query(
-                    'SELECT id FROM site_settings WHERE key_name = ?',
-                    [$dbKey]
-                )->fetch();
+            // Upsert: update existing row, or insert a new one
+            $exists = $db->query(
+                'SELECT id FROM site_settings WHERE key_name = ?',
+                [$dbKey]
+            )->fetch();
 
-                if ($exists) {
-                    $db->query(
-                        'UPDATE site_settings SET value=?, updated_at=NOW() WHERE key_name=?',
-                        [$value, $dbKey]
-                    );
-                } else {
-                    $db->query(
-                        'INSERT INTO site_settings (key_name, value, type, group_name) VALUES (?, ?, ?, ?)',
-                        [$dbKey, $value, 'string', $dbGroup]
-                    );
-                }
+            if ($exists) {
+                $db->query(
+                    'UPDATE site_settings SET value=?, updated_at=NOW() WHERE key_name=?',
+                    [$value, $dbKey]
+                );
+            } else {
+                $db->query(
+                    'INSERT INTO site_settings (key_name, value, type, group_name) VALUES (?, ?, ?, ?)',
+                    [$dbKey, $value, 'string', $update['group_name']]
+                );
             }
         }
 
@@ -153,6 +163,7 @@ class SettingsController extends Controller
             'social.youtube'          => 'social_youtube',
             'social.linkedin'         => 'social_linkedin',
             'social.tiktok'           => 'social_tiktok',
+            'social.whatsapp'         => 'social_whatsapp',
             'seo.default_title'       => 'default_seo_title',
             'seo.default_description' => 'default_seo_description',
             // Theme keys are stored prefixed to avoid collisions
@@ -171,7 +182,7 @@ class SettingsController extends Controller
     private function isUrlField(string $group, string $key): bool
     {
         if ($group === 'social') {
-            return true;
+            return $key !== 'whatsapp';
         }
 
         return in_array("{$group}.{$key}", [
@@ -179,5 +190,92 @@ class SettingsController extends Controller
             'site.favicon_url',
             'contact.map_embed_url',
         ], true);
+    }
+
+    private function validateSettingValue(
+        string $group,
+        string $key,
+        string $value,
+        array $allowedColorKeys,
+        array $allowedFontKeys,
+        array $allowedFonts
+    ): ?string {
+        if ($group === 'theme' && in_array($key, $allowedColorKeys, true)) {
+            if (!preg_match('/^#[0-9A-Fa-f]{3}(?:[0-9A-Fa-f]{3}(?:[0-9A-Fa-f]{2})?)?$/', $value)) {
+                return 'Enter a valid hex colour.';
+            }
+        }
+
+        if ($group === 'theme' && in_array($key, $allowedFontKeys, true)) {
+            if (!in_array($value, $allowedFonts, true)) {
+                return 'Choose a supported font.';
+            }
+        }
+
+        if ($group === 'social' && $key === 'whatsapp') {
+            return $this->validateWhatsAppValue($value);
+        }
+
+        if ($group === 'contact' && $key === 'map_embed_url') {
+            return $this->validateGoogleMapsEmbedUrl($value);
+        }
+
+        if ($this->isUrlField($group, $key) && $value !== '') {
+            if (!filter_var($value, FILTER_VALIDATE_URL)) {
+                return 'Enter a valid URL.';
+            }
+        }
+
+        return null;
+    }
+
+    private function validateGoogleMapsEmbedUrl(string $value): ?string
+    {
+        $trimmed = trim($value);
+        if ($trimmed === '') {
+            return null;
+        }
+
+        if (!filter_var($trimmed, FILTER_VALIDATE_URL)) {
+            return 'Enter a valid Google Maps embed URL.';
+        }
+
+        $host = strtolower((string) parse_url($trimmed, PHP_URL_HOST));
+        $path = (string) parse_url($trimmed, PHP_URL_PATH);
+        parse_str((string) parse_url($trimmed, PHP_URL_QUERY), $query);
+
+        $isGoogleMapsHost = in_array($host, ['www.google.com', 'google.com', 'maps.google.com'], true);
+        $isEmbedPath = str_starts_with($path, '/maps/embed');
+        $isOutputEmbed = str_starts_with($path, '/maps') && (($query['output'] ?? null) === 'embed');
+
+        if ($isGoogleMapsHost && ($isEmbedPath || $isOutputEmbed)) {
+            return null;
+        }
+
+        return 'Paste the embeddable Google Maps iframe src URL, not a normal Google search or Maps page URL.';
+    }
+
+    private function validateWhatsAppValue(string $value): ?string
+    {
+        $trimmed = trim($value);
+        if ($trimmed === '') {
+            return null;
+        }
+
+        if (filter_var($trimmed, FILTER_VALIDATE_URL)) {
+            $host = strtolower((string) parse_url($trimmed, PHP_URL_HOST));
+            $allowedHosts = ['wa.me', 'api.whatsapp.com', 'web.whatsapp.com'];
+
+            return in_array($host, $allowedHosts, true)
+                ? null
+                : 'Enter a valid WhatsApp URL.';
+        }
+
+        $phone = preg_replace('/[^\d+]/', '', $trimmed) ?? '';
+        if (preg_match('/^\+?[1-9]\d{6,14}$/', $phone) === 1) {
+            return null;
+        }
+
+        return 'Enter a WhatsApp URL or an international phone number with country code.';
     }
 }

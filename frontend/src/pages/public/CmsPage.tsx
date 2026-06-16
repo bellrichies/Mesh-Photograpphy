@@ -15,7 +15,7 @@ export default function CmsPage() {
 
   if (isLoading) {
     return (
-      <div className="pt-24 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="pt-24 site-container-readable">
         <div className="space-y-4">
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="h-4 bg-cream rounded animate-pulse" style={{ width: `${55 + (i % 4) * 12}%` }} />
@@ -38,7 +38,7 @@ export default function CmsPage() {
       <PageMeta title={heroTitle} seo={page.seo} />
 
       <div className="pt-24 pb-20">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container-readable">
           <header className="mb-10">
             <h1 className="font-display text-4xl sm:text-5xl text-charcoal font-light">{heroTitle}</h1>
             {heroSubtitle && (

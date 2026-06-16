@@ -21,6 +21,7 @@ export default function Navbar({ settings }: NavbarProps) {
   const [scrolled, setScrolled]  = useState(false);
   const { pathname } = useLocation();
   const siteName = settings?.site.name ?? 'Mesh Photography';
+  const logoUrl = settings?.site.logo_url ?? null;
   const ig = settings?.social.instagram ?? null;
   const fb = settings?.social.facebook ?? null;
 
@@ -58,16 +59,26 @@ export default function Navbar({ settings }: NavbarProps) {
         Skip to content
       </a>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[72px] flex items-center justify-between">
+      <div className="site-container h-[72px] flex items-center justify-between">
         {/* Logo */}
         <Link
           to="/"
           className={cn(
-            'font-display text-xl lg:text-[22px] tracking-wide transition-colors duration-300',
+            'inline-flex items-center gap-2.5 transition-colors duration-300',
             transparent ? 'text-ivory' : 'text-charcoal'
           )}
+          aria-label={`${siteName} home`}
         >
-          {siteName}
+          {logoUrl && (
+            <img
+              src={logoUrl}
+              alt=""
+              className="h-9 w-auto max-w-[140px] object-contain"
+              loading="eager"
+              decoding="async"
+            />
+          )}
+          <span className="font-display text-xl lg:text-[22px] tracking-wide">{siteName}</span>
         </Link>
 
         {/* Desktop nav */}

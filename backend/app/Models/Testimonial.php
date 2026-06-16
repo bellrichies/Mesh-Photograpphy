@@ -13,7 +13,7 @@ class Testimonial
     public function findPublished(): array
     {
         return $this->db->query(
-            'SELECT t.*, m.path AS portrait_path, m.alt_text AS portrait_alt,
+            'SELECT t.*, m.id AS portrait_id, m.path AS portrait_path, m.alt_text AS portrait_alt,
                     m.uuid AS portrait_uuid, m.original_name AS portrait_original,
                     m.file_name AS portrait_file, m.mime_type AS portrait_mime,
                     m.file_size AS portrait_size, m.width AS portrait_width,

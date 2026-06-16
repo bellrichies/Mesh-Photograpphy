@@ -165,6 +165,31 @@ export interface Testimonial {
   sort_order: number;
 }
 
+// ─── Team Member ──────────────────────────────────────────────────────────────
+
+export interface TeamMember {
+  id: number;
+  name: string;
+  role: string | null;
+  bio: string | null;
+  photo: MediaRecord | null;
+  email: string | null;
+  instagram_url: string | null;
+  status: 'draft' | 'published';
+  sort_order: number;
+}
+
+// ─── Client ───────────────────────────────────────────────────────────────────
+
+export interface Client {
+  id: number;
+  name: string;
+  website_url: string | null;
+  logo: MediaRecord | null;
+  status: 'draft' | 'published';
+  sort_order: number;
+}
+
 // ─── Hero Slide ───────────────────────────────────────────────────────────────
 
 export interface HeroSlide {
@@ -286,4 +311,5 @@ export interface DashboardMetrics {
   hero_slides: { total: number; published: number };
   inquiries:   { total: number; new: number; in_progress: number };
   bookings:    { total: number; new: number; quoted: number };
+  subscribers: { total: number; active: number; unsubscribed: number };
 }

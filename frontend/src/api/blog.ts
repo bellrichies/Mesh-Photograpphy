@@ -25,7 +25,7 @@ async function fetchPosts(filters: BlogFilters): Promise<PaginatedResponse<BlogP
 }
 
 async function fetchPost(slug: string): Promise<BlogPostDetail> {
-  const res = await apiClient.get<ApiResponse<BlogPostDetail>>(`/blog/posts/${slug}`);
+  const res = await apiClient.get<ApiResponse<BlogPostDetail>>(`/blog/posts/${encodeURIComponent(slug)}`);
   return res.data.data;
 }
 

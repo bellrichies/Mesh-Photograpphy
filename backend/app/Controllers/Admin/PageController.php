@@ -222,7 +222,9 @@ class PageController extends Controller
         $sections = null;
         if (array_key_exists('sections', $data)) {
             if (!is_array($data['sections'])) {
-                $errors['sections'][] = 'Sections must be an array.';
+                $errors['sections'][] = 'Sections must be a list of section objects.';
+            } elseif (!array_is_list($data['sections'])) {
+                $errors['sections'][] = 'Sections must be submitted as a list, not an object map.';
             } else {
                 [$sections, $sectionErrors] = $this->normalizeSections($data['sections']);
                 $errors = array_merge($errors, $sectionErrors);
@@ -284,25 +286,26 @@ class PageController extends Controller
 
         foreach ($sections as $index => $section) {
             if (!is_array($section)) {
-                $errors["sections.{$index}"][] = 'Section must be an object.';
+                $errors["sections.{$index}"][] = $this->sectionError("Section " . ($index + 1), null, 'Section must be an object.');
                 continue;
             }
 
             $key = $this->cleanSectionKey($section['section_key'] ?? null);
+            $sectionName = $this->sectionDisplayName($section, $key, $index);
             if ($key === null) {
-                $errors["sections.{$index}.section_key"][] = 'Section key is required.';
+                $errors["sections.{$index}.section_key"][] = $this->sectionError($sectionName, 'Section key', 'Section key is required.');
                 continue;
             }
 
             if (isset($seen[$key])) {
-                $errors["sections.{$index}.section_key"][] = 'Section key must be unique per page.';
+                $errors["sections.{$index}.section_key"][] = $this->sectionError($sectionName, 'Section key', 'Section key must be unique per page.');
                 continue;
             }
             $seen[$key] = true;
 
             $type = (string) ($section['section_type'] ?? 'text');
             if (!in_array($type, self::SECTION_TYPES, true)) {
-                $errors["sections.{$index}.section_type"][] = 'Section type is invalid.';
+                $errors["sections.{$index}.section_type"][] = $this->sectionError($sectionName, 'Section type', 'Section type is invalid.');
                 continue;
             }
 
@@ -312,20 +315,30 @@ class PageController extends Controller
             } elseif ($type === 'json') {
                 $content = $this->normalizeJsonContent($content);
                 if ($content === null && !empty($section['content'])) {
-                    $errors["sections.{$index}.content"][] = 'JSON content is invalid.';
+                    $errors["sections.{$index}.content"][] = $this->sectionError(
+                        $sectionName,
+                        'Content',
+                        'JSON content is invalid: ' . json_last_error_msg() . '.'
+                    );
                 }
             } else {
                 $content = $this->cleanNullableString($content);
             }
 
             $mediaId = $this->cleanInteger($section['media_id'] ?? null);
-            if ($mediaId !== null && !$this->mediaExists($mediaId)) {
-                $errors["sections.{$index}.media_id"][] = 'Selected media was not found.';
+            if ($mediaId !== null && !$this->mediaExists($mediaId, $type === 'image')) {
+                $errors["sections.{$index}.media_id"][] = $this->sectionError(
+                    $sectionName,
+                    'Image',
+                    $type === 'image'
+                        ? 'Selected image was not found in the media library.'
+                        : 'Selected media was not found in the media library.'
+                );
             }
 
-            $settingsJson = null;
-            if (isset($section['settings']) && is_array($section['settings'])) {
-                $settingsJson = json_encode($section['settings'], JSON_THROW_ON_ERROR);
+            [$settingsJson, $settingsError] = $this->normalizeSectionSettings($section['settings'] ?? null);
+            if ($settingsError !== null) {
+                $errors["sections.{$index}.settings"][] = $this->sectionError($sectionName, 'Settings', $settingsError);
             }
 
             $normalized[] = [
@@ -373,14 +386,60 @@ class PageController extends Controller
         return null;
     }
 
-    private function formatSection(array $section): array
+    private function sectionDisplayName(array $section, ?string $key, int $index): string
     {
-        $settings = null;
-        if (!empty($section['settings_json'])) {
-            $decoded = json_decode((string) $section['settings_json'], true);
-            $settings = is_array($decoded) ? $decoded : null;
+        $label = $this->cleanText($section['title'] ?? null, 255);
+        if ($label !== null) {
+            return $label;
         }
 
+        if ($key !== null) {
+            return ucwords(str_replace(['_', '-'], ' ', $key));
+        }
+
+        return 'Section ' . ($index + 1);
+    }
+
+    private function sectionError(string $sectionName, ?string $fieldName, string $message): string
+    {
+        return $fieldName === null
+            ? "{$sectionName}: {$message}"
+            : "{$sectionName} - {$fieldName}: {$message}";
+    }
+
+    private function normalizeSectionSettings(mixed $settings): array
+    {
+        if ($settings === null || $settings === []) {
+            return [null, null];
+        }
+
+        if (!is_array($settings)) {
+            return [null, 'Settings must be an object.'];
+        }
+
+        if (array_is_list($settings)) {
+            return [null, 'Settings must be an object, not an array.'];
+        }
+
+        return [json_encode($settings, JSON_THROW_ON_ERROR), null];
+    }
+
+    private function formatSectionSettings(?string $settingsJson): mixed
+    {
+        if ($settingsJson === null || trim($settingsJson) === '') {
+            return (object) [];
+        }
+
+        $decoded = json_decode($settingsJson, true);
+        if (!is_array($decoded) || $decoded === [] || array_is_list($decoded)) {
+            return (object) [];
+        }
+
+        return $decoded;
+    }
+
+    private function formatSection(array $section): array
+    {
         return [
             'id' => (int) $section['id'],
             'section_key' => $section['section_key'],
@@ -391,7 +450,7 @@ class PageController extends Controller
             'media' => !empty($section['media_path'])
                 ? $this->mediaFormatter->formatCover($section, 'media')
                 : null,
-            'settings' => $settings ?? (object) [],
+            'settings' => $this->formatSectionSettings($section['settings_json'] ?? null),
             'sort_order' => (int) $section['sort_order'],
         ];
     }
@@ -516,10 +575,17 @@ class PageController extends Controller
         return trim($html) === '' ? null : trim($html);
     }
 
-    private function mediaExists(int $id): bool
+    private function mediaExists(int $id, bool $imageOnly = false): bool
     {
+        $sql = 'SELECT id FROM media WHERE id = ? AND deleted_at IS NULL';
+        $params = [$id];
+
+        if ($imageOnly) {
+            $sql .= " AND mime_type LIKE 'image/%'";
+        }
+
         return (bool) app_database()
-            ->query('SELECT id FROM media WHERE id = ? AND deleted_at IS NULL LIMIT 1', [$id])
+            ->query($sql . ' LIMIT 1', $params)
             ->fetch();
     }
 }

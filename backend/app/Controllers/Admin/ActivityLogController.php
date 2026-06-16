@@ -53,17 +53,21 @@ class ActivityLogController extends Controller
         )->fetchAll();
 
         $items = array_map(fn(array $r) => [
-            'id'         => (int) $r['id'],
-            'action'     => $r['action'],
-            'model_type' => $r['model_type'],
-            'model_id'   => $r['model_id'] ? (int) $r['model_id'] : null,
-            'user'       => ($r['first_name'] ?? null) ? [
+            'id'             => (int) $r['id'],
+            'action'         => $r['action'],
+            'model_type'     => $r['model_type'],
+            'model_id'       => $r['model_id'] ? (int) $r['model_id'] : null,
+            'description'    => $r['description'] ?? null,
+            'user'           => ($r['user_email'] ?? null) ? [
                 'id'    => (int) $r['user_id'],
-                'name'  => trim($r['first_name'] . ' ' . $r['last_name']),
+                'name'  => trim((string) ($r['first_name'] ?? '') . ' ' . (string) ($r['last_name'] ?? '')) ?: $r['user_email'],
                 'email' => $r['user_email'],
             ] : null,
-            'ip_address' => $r['ip_address'],
-            'created_at' => $r['created_at'],
+            'ip_address'     => $r['ip_address'],
+            'user_agent'     => $r['user_agent'],
+            'request_method' => $r['request_method'] ?? null,
+            'request_path'   => $r['request_path'] ?? null,
+            'created_at'     => $r['created_at'],
         ], $rows);
 
         return $this->success($items, 'Success', 200, $this->paginate($items, $total, $page, $perPage));

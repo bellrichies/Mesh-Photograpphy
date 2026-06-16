@@ -26,14 +26,14 @@ export default function PortfolioPage() {
 
       <div className="pt-24 pb-16">
         {/* Header */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12 text-center">
+        <div className="site-container mb-12 text-center">
           <p className="font-body text-xs tracking-widest uppercase text-bronze mb-3">Portfolio</p>
           <h1 className="font-display text-5xl text-charcoal font-light">Our Work</h1>
         </div>
 
         {/* Category tabs */}
         {cats.length > 0 && (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-10">
+          <div className="site-container mb-10">
             <div className="flex gap-2 flex-wrap">
               <button
                 onClick={() => selectCategory('')}
@@ -68,7 +68,7 @@ export default function PortfolioPage() {
         )}
 
         {/* Grid */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           {isLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {Array.from({ length: 6 }).map((_, i) => (

@@ -1,4 +1,4 @@
-import { useParams, Link, Navigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { Calendar, User, ArrowLeft, ArrowRight, ChevronLeft, Twitter, Linkedin, Link2 } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import toast from 'react-hot-toast';
@@ -6,13 +6,34 @@ import PageMeta from '@/components/ui/PageMeta';
 import BlogSidebar from '@/components/public/BlogSidebar';
 import { useBlogPost } from '@/api/blog';
 
+function BlogPostFallback({ title, message }: { title: string; message: string }) {
+  return (
+    <>
+      <PageMeta title={title} description={message} />
+      <div className="pt-28 pb-20">
+        <div className="site-container-readable text-center">
+          <p className="font-body text-xs tracking-widest uppercase text-bronze mb-3">Journal</p>
+          <h1 className="font-display text-4xl text-charcoal font-light mb-4">{title}</h1>
+          <p className="font-body text-sm text-taupe leading-relaxed mb-8">{message}</p>
+          <Link
+            to="/blog"
+            className="inline-flex items-center justify-center px-5 py-2.5 bg-bronze text-ivory font-body text-xs tracking-widest uppercase hover:bg-bronze-dark transition-colors"
+          >
+            Back to Journal
+          </Link>
+        </div>
+      </div>
+    </>
+  );
+}
+
 export default function BlogPostPage() {
   const { slug }  = useParams<{ slug: string }>();
-  const { data: post, isLoading, isError } = useBlogPost(slug ?? '');
+  const { data: post, isLoading, isError, error } = useBlogPost(slug ?? '');
 
   if (isLoading) {
     return (
-      <div className="pt-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="pt-24 site-container">
         <div className="flex flex-col lg:flex-row gap-12">
           <div className="flex-1 min-w-0">
             <div className="aspect-video bg-cream animate-pulse mb-8" />
@@ -32,7 +53,34 @@ export default function BlogPostPage() {
     );
   }
 
-  if (isError || !post) return <Navigate to="/blog" replace />;
+  const status = (error as { response?: { status?: number } } | null)?.response?.status;
+
+  if (!slug || status === 404) {
+    return (
+      <BlogPostFallback
+        title="Post Not Found"
+        message="This post is not available or has not been published yet."
+      />
+    );
+  }
+
+  if (isError) {
+    return (
+      <BlogPostFallback
+        title="Could Not Load Post"
+        message="The post could not be loaded right now. Please refresh the page or try another story."
+      />
+    );
+  }
+
+  if (!post) {
+    return (
+      <BlogPostFallback
+        title="Post Not Found"
+        message="This post is not available or has not been published yet."
+      />
+    );
+  }
 
   const safeBody  = DOMPurify.sanitize(post.body ?? '');
   const pageUrl   = typeof window !== 'undefined' ? window.location.href : '';
@@ -53,7 +101,7 @@ export default function BlogPostPage() {
       <PageMeta title={post.title} seo={post.seo} />
 
       <div className="pt-24 pb-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           {/* Two-column layout: article + sidebar */}
           <div className="flex flex-col lg:flex-row gap-12 xl:gap-16 items-start">
 

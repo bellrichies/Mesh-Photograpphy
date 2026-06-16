@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
 import PageMeta from '@/components/ui/PageMeta';
 import { useServices } from '@/api/services';
+import ServiceCard from '@/components/public/ServiceCard';
 
 export default function ServicesPage() {
   const { data: services, isLoading } = useServices();
@@ -12,7 +12,7 @@ export default function ServicesPage() {
       <PageMeta title="Services" description="Professional photography services for weddings, portraits, and more." />
 
       <div className="pt-24 pb-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           {/* Header */}
           <div className="text-center mb-16">
             <p className="font-body text-xs tracking-widest uppercase text-bronze mb-3">Services</p>
@@ -23,47 +23,19 @@ export default function ServicesPage() {
           </div>
 
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="bg-cream animate-pulse h-80" />
+                <div key={i} className="space-y-4">
+                  <div className="bg-cream animate-pulse" style={{ aspectRatio: '3/4' }} />
+                  <div className="h-6 w-3/5 bg-cream animate-pulse rounded" />
+                  <div className="h-3 w-full bg-cream animate-pulse rounded" />
+                </div>
               ))}
             </div>
           ) : list.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {list.map((s) => (
-                <Link
-                  key={s.id}
-                  to={`/services/${s.slug}`}
-                  className="group bg-ivory border border-cream overflow-hidden hover:shadow-soft transition-shadow"
-                >
-                  {s.cover && (
-                    <div className="aspect-video overflow-hidden">
-                      <img
-                        src={s.cover.url}
-                        alt={s.cover.alt_text ?? s.title}
-                        width={480}
-                        height={270}
-                        loading="lazy"
-                        decoding="async"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    </div>
-                  )}
-                  <div className="p-6">
-                    <h2 className="font-display text-2xl text-charcoal group-hover:text-bronze transition-colors">{s.title}</h2>
-                    {s.short_description && (
-                      <p className="font-body text-sm text-taupe mt-2 line-clamp-3">{s.short_description}</p>
-                    )}
-                    <div className="flex items-center justify-between mt-4">
-                      {s.price_display && (
-                        <span className="font-body text-xs text-bronze tracking-wide">{s.price_display}</span>
-                      )}
-                      <span className="inline-flex items-center gap-1 font-body text-xs text-taupe group-hover:text-bronze transition-colors ml-auto">
-                        Learn more <ArrowRight size={13} />
-                      </span>
-                    </div>
-                  </div>
-                </Link>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+              {list.map((s, i) => (
+                <ServiceCard key={s.id} service={s} index={i} />
               ))}
             </div>
           ) : (

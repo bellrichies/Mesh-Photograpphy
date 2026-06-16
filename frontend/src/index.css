@@ -27,3 +27,38 @@
     font-family: var(--theme-font-display);
   }
 }
+
+@layer components {
+  .site-container,
+  .site-container-readable {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .site-container {
+    max-width: 88rem;
+  }
+
+  .site-container-readable {
+    max-width: 60rem;
+  }
+
+  @media (min-width: 640px) {
+    .site-container,
+    .site-container-readable {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .site-container,
+    .site-container-readable {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
+}

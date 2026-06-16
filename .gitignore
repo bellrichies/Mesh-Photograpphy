@@ -17,6 +17,7 @@ backend/public/uploads/
 # ─── Frontend ────────────────────────────────────────────────────────────────
 frontend/node_modules/
 frontend/dist/
+frontend/tmp/
 frontend/.env
 frontend/.env.local
 frontend/.env.*.local

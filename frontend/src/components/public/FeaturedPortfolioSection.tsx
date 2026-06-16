@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import { Plus, ArrowRight } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import Lightbox from '@/components/ui/Lightbox';
 import type { GalleryPhoto } from '@/types/models';
@@ -14,7 +13,7 @@ interface FeaturedPortfolioSectionProps {
 
 function GridSkeleton() {
   return (
-    <div className="grid grid-cols-3 lg:grid-cols-8 gap-px bg-ivory">
+    <div className="grid grid-cols-3 lg:grid-cols-8 gap-0 bg-ivory">
       {/* Mobile shows 9, desktop shows 16 */}
       {Array.from({ length: 16 }).map((_, i) => (
         <div
@@ -52,9 +51,6 @@ export default function FeaturedPortfolioSection({
     return (
       <section className="bg-ivory">
         <GridSkeleton />
-        <div className="py-8 border-t border-cream flex justify-center">
-          <div className="h-4 w-44 bg-cream animate-pulse rounded" />
-        </div>
       </section>
     );
   }
@@ -67,16 +63,15 @@ export default function FeaturedPortfolioSection({
         {/*
           Desktop (lg+): 8 columns x 2 rows = 16 tiles
           Mobile       : 3 columns x 3 rows = 9 tiles (items 9-15 hidden)
-          gap-px + bg-ivory = 1 px ivory hairline between tiles
         */}
-        <div className="grid grid-cols-3 lg:grid-cols-8 gap-px bg-ivory">
+        <div className="grid grid-cols-3 lg:grid-cols-8 gap-0 bg-ivory">
           {photos.map((photo, i) => (
             <button
               key={photo.id}
               onClick={() => openAt(i)}
               aria-label={`View photo ${i + 1}${photo.alt_text ? ` - ${photo.alt_text}` : ''}`}
               className={cn(
-                'group relative aspect-[3/4] overflow-hidden bg-sand block w-full text-left',
+                'group relative aspect-[3/4] overflow-hidden bg-sand block w-full border-0 p-0 text-left',
                 // Hide items beyond the 9th on small screens
                 i >= 9 ? 'hidden lg:block' : ''
               )}
@@ -105,16 +100,6 @@ export default function FeaturedPortfolioSection({
           ))}
         </div>
 
-        {/* Footer row */}
-        <div className="flex items-center justify-center py-8 border-t border-cream">
-          <Link
-            to="/portfolio"
-            className="inline-flex items-center gap-2 font-body text-xs tracking-[0.2em] uppercase text-charcoal hover:text-bronze transition-colors duration-150"
-          >
-            View All Galleries
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
       </section>
 
       {/* Lightbox - rendered at root level via React portal-like stacking */}

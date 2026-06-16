@@ -13,14 +13,5 @@ RewriteRule ^(.*)$ index.php [QSA,L]
 
 # Security: deny access to hidden files
 <FilesMatch "^\.">
-    Order allow,deny
-    Deny from all
+    Require all denied
 </FilesMatch>
-
-# Security: deny access to PHP files in uploads
-<Directory "uploads">
-    <FilesMatch "\.php$">
-        Order allow,deny
-        Deny from all
-    </FilesMatch>
-</Directory>

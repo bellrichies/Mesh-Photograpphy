@@ -7,8 +7,12 @@ export interface ActivityLogEntry {
   action: string;
   model_type: string | null;
   model_id: number | null;
+  description: string | null;
   user: { id: number; name: string; email: string } | null;
   ip_address: string | null;
+  user_agent: string | null;
+  request_method: string | null;
+  request_path: string | null;
   created_at: string;
 }
 

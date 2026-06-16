@@ -15,7 +15,7 @@ const INTERVAL_MS = 6000;
 function HeroSkeleton() {
   return (
     <div className="h-[90vh] min-h-[620px] w-full bg-charcoal-light animate-pulse flex items-end pb-24">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+      <div className="site-container">
         <div className="h-3 w-28 bg-ivory/20 rounded mb-4" />
         <div className="h-14 w-2/3 bg-ivory/20 rounded mb-3" />
         <div className="h-14 w-1/2 bg-ivory/20 rounded mb-8" />
@@ -83,7 +83,7 @@ export default function HeroCarousel({ slides, isLoading, siteName }: HeroCarous
     return (
       <section className="relative h-[90vh] min-h-[620px] overflow-hidden bg-espresso flex items-end pb-24 pt-[72px]">
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-black/55" />
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div className="relative z-10 site-container">
           <div className="max-w-2xl">
             <h1 className="font-display text-5xl lg:text-7xl text-ivory font-light leading-tight mb-6">
               {siteName ?? 'Mesh Photography'}
@@ -150,7 +150,7 @@ export default function HeroCarousel({ slides, isLoading, siteName }: HeroCarous
           fading ? 'opacity-0' : 'opacity-100'
         )}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          <div className="site-container">
           <div className="max-w-2xl">
             {slide.subtitle && (
               <p className="font-body text-sm tracking-[0.2em] uppercase text-gold mb-4 opacity-90">

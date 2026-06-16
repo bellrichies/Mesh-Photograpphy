@@ -26,6 +26,19 @@ class Response
         return $this;
     }
 
+    public function csv(string $content, string $filename, int $status = 200): static
+    {
+        $safeFilename = preg_replace('/[^A-Za-z0-9._-]/', '_', $filename) ?: 'export.csv';
+
+        $this->statusCode = $status;
+        $this->headers['Content-Type'] = 'text/csv; charset=UTF-8';
+        $this->headers['Content-Disposition'] = 'attachment; filename="' . $safeFilename . '"';
+        $this->headers['X-Content-Type-Options'] = 'nosniff';
+        $this->body = $content;
+
+        return $this;
+    }
+
     public function redirect(string $url, int $status = 302): static
     {
         $this->statusCode = $status;
@@ -43,6 +56,11 @@ class Response
     public function getStatusCode(): int
     {
         return $this->statusCode;
+    }
+
+    public function getBody(): string
+    {
+        return $this->body;
     }
 
     public function send(): void

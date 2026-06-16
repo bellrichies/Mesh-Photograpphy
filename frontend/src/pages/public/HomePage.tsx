@@ -38,7 +38,7 @@ export default function HomePage() {
         isLoading={photosLoading}
       />
 
-      <BrandIntroSection settings={settings} />
+      <BrandIntroSection settings={settings} photos={(photos ?? []).slice(0, 3)} />
 
       <ServicesTeaserSection />
 

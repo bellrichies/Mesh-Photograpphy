@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import FloatingWhatsAppButton from '@/components/layout/FloatingWhatsAppButton';
 import { usePublicSettings } from '@/api/settings';
 import { useTheme } from '@/hooks/useTheme';
 
@@ -18,6 +19,7 @@ export default function PublicLayout() {
       </main>
 
       <Footer settings={settings} />
+      <FloatingWhatsAppButton settings={settings} />
     </>
   );
 }

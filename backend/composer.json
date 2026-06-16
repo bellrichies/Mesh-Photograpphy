@@ -1,6 +1,7 @@
 {
     "name": "meshphoto/backend",
     "description": "Mesh Photography REST API",
+    "license": "proprietary",
     "type": "project",
     "require": {
         "php": "^8.2",

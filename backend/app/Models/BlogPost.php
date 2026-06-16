@@ -13,7 +13,7 @@ class BlogPost
     public function findPublished(array $filters = [], int $page = 1, int $perPage = 10): array
     {
         // Include explicitly published AND scheduled posts whose publish time has arrived
-        $where  = ['bp.deleted_at IS NULL', '(bp.is_published = 1 OR (bp.published_at IS NOT NULL AND bp.published_at <= NOW()))'];
+        $where  = ['bp.deleted_at IS NULL', $this->publicWhere('bp')];
         $params = [];
 
         if (!empty($filters['category'])) {
@@ -59,7 +59,7 @@ class BlogPost
 
     public function countPublished(array $filters = []): int
     {
-        $where  = ['bp.deleted_at IS NULL', 'bp.is_published = 1'];
+        $where  = ['bp.deleted_at IS NULL', $this->publicWhere('bp')];
         $params = [];
 
         if (!empty($filters['category'])) {
@@ -107,7 +107,7 @@ class BlogPost
              LEFT JOIN media m ON bp.cover_image_id = m.id AND m.deleted_at IS NULL
              LEFT JOIN blog_categories bc ON bp.category_id = bc.id
              LEFT JOIN users u ON bp.author_id = u.id
-             WHERE bp.slug = ? AND bp.deleted_at IS NULL AND bp.is_published = 1
+             WHERE bp.slug = ? AND bp.deleted_at IS NULL AND ' . $this->publicWhere('bp') . '
              LIMIT 1',
             [$slug]
         )->fetch() ?: null;
@@ -130,13 +130,16 @@ class BlogPost
         if ($categoryId) {
             return $this->db->query(
                 'SELECT bp.*, m.path AS cover_path, m.alt_text AS cover_alt,
+                        m.uuid AS cover_uuid, m.original_name AS cover_original,
                         m.file_name AS cover_file, m.mime_type AS cover_mime,
                         m.file_size AS cover_size, m.width AS cover_width,
-                        m.height AS cover_height
+                        m.height AS cover_height,
+                        bc.id AS cat_id, bc.name AS cat_name, bc.slug AS cat_slug
                  FROM blog_posts bp
                  LEFT JOIN media m ON bp.cover_image_id = m.id AND m.deleted_at IS NULL
+                 LEFT JOIN blog_categories bc ON bp.category_id = bc.id
                  WHERE bp.category_id = ? AND bp.id != ?
-                   AND bp.deleted_at IS NULL AND bp.is_published = 1
+                   AND bp.deleted_at IS NULL AND ' . $this->publicWhere('bp') . '
                  ORDER BY bp.published_at DESC
                  LIMIT ?',
                 [$categoryId, $postId, $limit]
@@ -145,12 +148,15 @@ class BlogPost
 
         return $this->db->query(
             'SELECT bp.*, m.path AS cover_path, m.alt_text AS cover_alt,
+                    m.uuid AS cover_uuid, m.original_name AS cover_original,
                     m.file_name AS cover_file, m.mime_type AS cover_mime,
                     m.file_size AS cover_size, m.width AS cover_width,
-                    m.height AS cover_height
+                    m.height AS cover_height,
+                    bc.id AS cat_id, bc.name AS cat_name, bc.slug AS cat_slug
              FROM blog_posts bp
              LEFT JOIN media m ON bp.cover_image_id = m.id AND m.deleted_at IS NULL
-             WHERE bp.id != ? AND bp.deleted_at IS NULL AND bp.is_published = 1
+             LEFT JOIN blog_categories bc ON bp.category_id = bc.id
+             WHERE bp.id != ? AND bp.deleted_at IS NULL AND ' . $this->publicWhere('bp') . '
              ORDER BY bp.published_at DESC
              LIMIT ?',
             [$postId, $limit]
@@ -161,7 +167,7 @@ class BlogPost
     {
         return $this->db->query(
             'SELECT slug, title FROM blog_posts
-             WHERE id < ? AND deleted_at IS NULL AND is_published = 1
+             WHERE id < ? AND deleted_at IS NULL AND ' . $this->publicWhere('blog_posts') . '
              ORDER BY id DESC LIMIT 1',
             [$id]
         )->fetch() ?: null;
@@ -171,7 +177,7 @@ class BlogPost
     {
         return $this->db->query(
             'SELECT slug, title FROM blog_posts
-             WHERE id > ? AND deleted_at IS NULL AND is_published = 1
+             WHERE id > ? AND deleted_at IS NULL AND ' . $this->publicWhere('blog_posts') . '
              ORDER BY id ASC LIMIT 1',
             [$id]
         )->fetch() ?: null;
@@ -183,7 +189,7 @@ class BlogPost
             'SELECT bc.id, bc.name, bc.slug, COUNT(bp.id) AS post_count
              FROM blog_categories bc
              LEFT JOIN blog_posts bp ON bp.category_id = bc.id
-                 AND bp.deleted_at IS NULL AND bp.is_published = 1
+                 AND bp.deleted_at IS NULL AND ' . $this->publicWhere('bp') . '
              GROUP BY bc.id, bc.name, bc.slug
              ORDER BY bc.name ASC'
         )->fetchAll();
@@ -204,7 +210,7 @@ class BlogPost
              FROM blog_tags bt
              LEFT JOIN blog_post_tags bpt ON bt.id = bpt.tag_id
              LEFT JOIN blog_posts bp ON bpt.post_id = bp.id
-                 AND bp.deleted_at IS NULL AND bp.is_published = 1
+                 AND bp.deleted_at IS NULL AND ' . $this->publicWhere('bp') . '
              GROUP BY bt.id, bt.name, bt.slug
              ORDER BY bt.name ASC'
         )->fetchAll();
@@ -216,5 +222,10 @@ class BlogPost
             'SELECT * FROM blog_tags WHERE slug = ? LIMIT 1',
             [$slug]
         )->fetch() ?: null;
+    }
+
+    private function publicWhere(string $alias): string
+    {
+        return "({$alias}.is_published = 1 OR ({$alias}.published_at IS NOT NULL AND {$alias}.published_at <= NOW()))";
     }
 }

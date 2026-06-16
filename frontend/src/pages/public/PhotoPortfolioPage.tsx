@@ -74,7 +74,7 @@ export default function PhotoPortfolioPage() {
       />
 
       <div className="pt-24 pb-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-10">
+        <div className="site-container mb-10">
           <Link
             to="/portfolio"
             className="inline-flex items-center gap-1.5 font-body text-sm text-taupe hover:text-bronze transition-colors mb-8"
@@ -91,7 +91,7 @@ export default function PhotoPortfolioPage() {
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           {isLoading ? (
             <PhotoGridSkeleton />
           ) : images.length > 0 ? (

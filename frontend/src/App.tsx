@@ -43,6 +43,8 @@ const BlogPostFormPage    = lazy(() => import('./pages/admin/BlogPostFormPage'))
 const ServicesAdminPage   = lazy(() => import('./pages/admin/ServicesPage'));
 const ServiceFormPage     = lazy(() => import('./pages/admin/ServiceFormPage'));
 const TestimonialsPage    = lazy(() => import('./pages/admin/TestimonialsPage'));
+const TeamPage            = lazy(() => import('./pages/admin/TeamPage'));
+const ClientsPage         = lazy(() => import('./pages/admin/ClientsPage'));
 const HeroSlidesPage      = lazy(() => import('./pages/admin/HeroSlidesPage'));
 const PagesAdminPage      = lazy(() => import('./pages/admin/PagesPage'));
 const InquiriesPage       = lazy(() => import('./pages/admin/InquiriesPage'));
@@ -52,6 +54,7 @@ const BookingDetailPage   = lazy(() => import('./pages/admin/BookingDetailPage')
 const SettingsPage        = lazy(() => import('./pages/admin/SettingsPage'));
 const UsersPage           = lazy(() => import('./pages/admin/UsersPage'));
 const ActivityLogPage     = lazy(() => import('./pages/admin/ActivityLogPage'));
+const NewsletterSubscribersPage = lazy(() => import('./pages/admin/NewsletterSubscribersPage'));
 
 export default function App() {
   return (
@@ -91,6 +94,8 @@ export default function App() {
           <Route path="/admin/services/:id/edit"      element={<ServiceFormPage />} />
 
           <Route path="/admin/testimonials"           element={<TestimonialsPage />} />
+          <Route path="/admin/team"                   element={<TeamPage />} />
+          <Route path="/admin/clients"                element={<ClientsPage />} />
           <Route path="/admin/hero-slides"            element={<HeroSlidesPage />} />
 
           <Route path="/admin/inquiries"              element={<InquiriesPage />} />
@@ -101,6 +106,7 @@ export default function App() {
 
           <Route path="/admin/settings"               element={<SettingsPage />} />
           <Route path="/admin/users"                  element={<UsersPage />} />
+          <Route path="/admin/newsletter/subscribers" element={<NewsletterSubscribersPage />} />
           <Route path="/admin/activity-log"           element={<ActivityLogPage />} />
         </Route>
 

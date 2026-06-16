@@ -21,6 +21,6 @@ export interface ApiErrorResponse {
   ok: false;
   message: string;
   data: null;
-  errors: Record<string, string>;
+  errors: Record<string, string | string[]>;
   meta: { status: number };
 }

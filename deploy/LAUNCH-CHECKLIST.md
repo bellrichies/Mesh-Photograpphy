@@ -10,6 +10,7 @@ Complete every item before going live. Check each box as you go.
 - [ ] Production database seeded: `php database/console.php seed:production`
 - [ ] `.env` created from `.env.production.example` — all placeholders replaced
 - [ ] `APP_ENV=production`, `APP_DEBUG=false`, `SESSION_SECURE=true` verified in `.env`
+- [ ] `ADMIN_INITIAL_PASSWORD` set to a unique initial password and changed after first login
 - [ ] `JWT_SECRET` is a unique 64-char hex string (never reused from dev)
 - [ ] `CORS_ALLOWED_ORIGINS` set to production domain only
 

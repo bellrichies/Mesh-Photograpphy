@@ -15,9 +15,14 @@ export default function ActivityLogPage() {
       key: 'action',
       header: 'Action',
       render: (entry) => (
-        <span className="font-body text-xs font-medium bg-ivory border border-cream text-charcoal px-2 py-0.5 rounded">
-          {entry.action}
-        </span>
+        <div>
+          <span className="font-body text-xs font-medium bg-ivory border border-cream text-charcoal px-2 py-0.5 rounded">
+            {entry.action}
+          </span>
+          {entry.description && (
+            <div className="font-body text-xs text-taupe mt-1">{entry.description}</div>
+          )}
+        </div>
       ),
     },
     {

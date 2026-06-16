@@ -51,7 +51,7 @@ export default function BookingPage() {
       <PageMeta title="Book a Session" description="Request a photography session. We'll get back to you within 24 hours." />
 
       <div className="pt-24 pb-20">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container-readable">
           {/* Header */}
           <div className="text-center mb-14">
             <p className="font-body text-xs tracking-widest uppercase text-bronze mb-3">Booking</p>

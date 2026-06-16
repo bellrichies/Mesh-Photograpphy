@@ -288,10 +288,10 @@ const CONTACT_FIELDS: { key: string; label: string; type?: FieldType }[] = [
   { key: 'phone',         label: 'Phone' },
   { key: 'email',         label: 'Email',                type: 'email' },
   { key: 'address',       label: 'Address',              type: 'textarea' },
-  { key: 'map_embed_url', label: 'Google Maps Embed URL', type: 'url' },
+  { key: 'map_embed_url', label: 'Google Maps iframe src URL', type: 'url' },
 ];
 
-const SOCIAL_FIELDS: { key: string; label: string }[] = [
+const SOCIAL_FIELDS: { key: string; label: string; type?: FieldType }[] = [
   { key: 'instagram', label: 'Instagram URL' },
   { key: 'facebook',  label: 'Facebook URL' },
   { key: 'x',         label: 'X / Twitter URL' },
@@ -299,6 +299,7 @@ const SOCIAL_FIELDS: { key: string; label: string }[] = [
   { key: 'pinterest', label: 'Pinterest URL' },
   { key: 'linkedin',  label: 'LinkedIn URL' },
   { key: 'tiktok',    label: 'TikTok URL' },
+  { key: 'whatsapp',  label: 'WhatsApp URL or Phone Number', type: 'text' },
 ];
 
 const SEO_FIELDS: { key: string; label: string; type?: FieldType }[] = [
@@ -492,7 +493,7 @@ export default function SettingsPage() {
         {activeTab === 'social' && (
           <div className="space-y-4">
             <h2 className="font-display text-base text-charcoal mb-4">Social Media</h2>
-            {SOCIAL_FIELDS.map(({ key, label }) => renderField('social', key, label, 'url'))}
+            {SOCIAL_FIELDS.map(({ key, label, type }) => renderField('social', key, label, type ?? 'url'))}
           </div>
         )}
 

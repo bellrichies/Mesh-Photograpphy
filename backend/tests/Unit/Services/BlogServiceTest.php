@@ -71,6 +71,28 @@ class BlogServiceTest extends TestCase
         $this->assertStringContainsString('/blog/my-post', $result['seo']['canonical_url']);
     }
 
+    public function test_get_by_slug_formats_related_posts_without_category_fields(): void
+    {
+        $row = $this->makePostRow(1, 'my-post', 'My Post');
+        $row['body'] = '<p>Content</p>';
+        $row['cat_id'] = 2;
+
+        $related = $this->makePostRow(2, 'related-post', 'Related Post');
+        unset($related['cat_id'], $related['cat_name'], $related['cat_slug']);
+
+        $this->model->method('findBySlug')->willReturn($row);
+        $this->model->method('getTagsForPost')->willReturn([]);
+        $this->model->method('getRelated')->willReturn([$related]);
+        $this->model->method('getPrev')->willReturn(null);
+        $this->model->method('getNext')->willReturn(null);
+
+        $result = $this->service->getBySlug('my-post');
+
+        $this->assertNotNull($result);
+        $this->assertCount(1, $result['related_posts']);
+        $this->assertSame([], $result['related_posts'][0]['categories']);
+    }
+
     public function test_get_categories_formats_post_count(): void
     {
         $this->model->method('getCategories')->willReturn([

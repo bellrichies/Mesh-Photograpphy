@@ -24,6 +24,12 @@ return function (Router $router): void {
     // Testimonials (public)
     $router->get('/api/v1/testimonials', 'Api\TestimonialController@index');
 
+    // Team members (public)
+    $router->get('/api/v1/team-members', 'Api\TeamMemberController@index');
+
+    // Clients (public)
+    $router->get('/api/v1/clients', 'Api\ClientController@index');
+
     // Hero slides (public)
     $router->get('/api/v1/hero-slides', 'Api\HeroSlideController@index');
 
@@ -42,6 +48,7 @@ return function (Router $router): void {
     // Contact & Booking forms
     $router->post('/api/v1/contact', 'Api\ContactController@store');
     $router->post('/api/v1/booking', 'Api\BookingController@store');
+    $router->post('/api/v1/newsletter/subscribe', 'Api\NewsletterSubscriptionController@store');
 
     // Sitemap
     $router->get('/api/v1/sitemap', 'Api\SeoController@sitemap');

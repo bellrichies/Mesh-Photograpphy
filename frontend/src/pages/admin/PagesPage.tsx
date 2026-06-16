@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useForm, Controller, useFieldArray } from 'react-hook-form';
+import { useForm, Controller, useFieldArray, type FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
@@ -21,18 +21,48 @@ import FormField, { fieldClass } from '@/components/admin/FormField';
 import SlugInput from '@/components/admin/SlugInput';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import MediaPicker from '@/components/admin/MediaPicker';
-import { getErrorMessage } from '@/utils/api-errors';
+import { extractApiErrors, getErrorMessage } from '@/utils/api-errors';
 import type { MediaRecord } from '@/types/models';
 
+const nullableNumber = z.preprocess(
+  (value) => (value === '' || value === undefined ? null : value),
+  z.coerce.number().int().nullable()
+);
+
+const SECTION_TYPES = ['text', 'rich_text', 'image', 'json'] as const;
+type SectionType = (typeof SECTION_TYPES)[number];
+
+function normalizeSectionSettings(value: unknown): Record<string, unknown> {
+  if (!value || Array.isArray(value) || typeof value !== 'object') {
+    return {};
+  }
+
+  return value as Record<string, unknown>;
+}
+
 const sectionSchema = z.object({
-  section_key: z.string(),
-  section_type: z.string(),
+  section_key: z.string().min(1, 'Section key is required.'),
+  section_type: z.enum(SECTION_TYPES),
   title: z.string().nullable().optional(),
   content: z.string().nullable().optional(),
-  media_id: z.number().nullable().optional(),
+  media_id: nullableNumber.optional(),
   media: z.custom<MediaRecord | null>().nullable().optional(),
-  settings: z.record(z.unknown()).optional(),
-  sort_order: z.number(),
+  settings: z.preprocess(normalizeSectionSettings, z.record(z.unknown())).optional(),
+  sort_order: z.coerce.number().int('Sort order must be a whole number.'),
+}).superRefine((section, ctx) => {
+  if (section.section_type !== 'json' || !section.content?.trim()) {
+    return;
+  }
+
+  try {
+    JSON.parse(section.content);
+  } catch {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['content'],
+      message: 'Content must be valid JSON.',
+    });
+  }
 });
 
 const schema = z.object({
@@ -46,7 +76,7 @@ const schema = z.object({
   canonical_url: z.string().optional(),
   og_title: z.string().optional(),
   og_description: z.string().optional(),
-  og_image_id: z.number().nullable().optional(),
+  og_image_id: nullableNumber.optional(),
   og_image: z.custom<MediaRecord | null>().nullable().optional(),
   seo_robots: z.string().optional(),
   schema_markup: z.string().optional(),
@@ -63,21 +93,38 @@ const ROBOTS_OPTIONS = [
   'noindex, nofollow',
 ] as const;
 
+const SECTION_FIELD_LABELS: Record<string, string> = {
+  section_key: 'Section key',
+  section_type: 'Section type',
+  title: 'Title',
+  content: 'Content',
+  media_id: 'Image',
+  media: 'Image',
+  settings: 'Settings',
+  sort_order: 'Sort order',
+};
+
 function sectionLabel(key: string): string {
   const map: Record<string, string> = {
     hero_title: 'Hero Title',
     hero_subtitle: 'Hero Subtitle',
     hero_image: 'Hero Image',
     story_heading: 'Story Heading',
+    story_image: 'Story Image',
     story_body: 'Brand Story',
     mission_heading: 'Mission Heading',
+    mission_image: 'Mission Image',
     mission_body: 'Mission Body',
     vision_heading: 'Vision Heading',
+    vision_image: 'Vision Image',
     vision_body: 'Vision Body',
+    approach_image: 'Approach Image',
     approach_body: 'Our Approach',
     team_heading: 'Team Heading',
+    team_image: 'Team Image',
     team_body: 'Team Body',
     clients_heading: 'Clients Heading',
+    clients_image: 'Clients Image',
     clients_body: 'Clients Body',
     cta_heading: 'CTA Heading',
     cta_body: 'CTA Subtext',
@@ -91,21 +138,178 @@ function sectionLabel(key: string): string {
   return map[key] ?? key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+function normalizeSectionType(value: string | null | undefined): SectionType {
+  return SECTION_TYPES.includes(value as SectionType) ? (value as SectionType) : 'text';
+}
+
+function errorMessage(error: unknown): string | null {
+  if (!error) {
+    return null;
+  }
+
+  if (typeof error === 'string') {
+    return error;
+  }
+
+  if (Array.isArray(error)) {
+    for (const item of error) {
+      const message = errorMessage(item);
+      if (message) return message;
+    }
+    return null;
+  }
+
+  if (typeof error === 'object') {
+    const record = error as Record<string, unknown>;
+    if (typeof record.message === 'string') {
+      return record.message;
+    }
+
+    for (const value of Object.values(record)) {
+      const message = errorMessage(value);
+      if (message) return message;
+    }
+  }
+
+  return null;
+}
+
+function fieldError(sectionError: unknown, field: string): string | null {
+  if (!sectionError || typeof sectionError !== 'object') {
+    return null;
+  }
+
+  const record = sectionError as Record<string, unknown>;
+  return errorMessage(record[field]);
+}
+
+function sectionErrorAt(errors: unknown, index: number): unknown {
+  if (!errors) {
+    return null;
+  }
+
+  if (Array.isArray(errors)) {
+    return errors[index] ?? null;
+  }
+
+  if (typeof errors === 'object') {
+    return (errors as Record<string, unknown>)[String(index)] ?? null;
+  }
+
+  return null;
+}
+
+function firstSectionError(
+  errors: unknown
+): { index: number; field: string | null; message: string } | null {
+  if (!errors) {
+    return null;
+  }
+
+  const inspectSection = (sectionError: unknown, index: number) => {
+    if (!sectionError || typeof sectionError !== 'object') {
+      const message = errorMessage(sectionError);
+      return message ? { index, field: null, message } : null;
+    }
+
+    const record = sectionError as Record<string, unknown>;
+    for (const field of Object.keys(SECTION_FIELD_LABELS)) {
+      const message = errorMessage(record[field]);
+      if (message) return { index, field, message };
+    }
+
+    const message = errorMessage(record);
+    return message ? { index, field: null, message } : null;
+  };
+
+  if (Array.isArray(errors)) {
+    for (let index = 0; index < errors.length; index += 1) {
+      const result = inspectSection(errors[index], index);
+      if (result) return result;
+    }
+    return null;
+  }
+
+  if (typeof errors === 'object') {
+    for (const [key, value] of Object.entries(errors as Record<string, unknown>)) {
+      const index = Number(key);
+      if (!Number.isInteger(index)) {
+        continue;
+      }
+
+      const result = inspectSection(value, index);
+      if (result) return result;
+    }
+  }
+
+  const message = errorMessage(errors);
+  return message ? { index: -1, field: null, message } : null;
+}
+
+function formatSectionError(
+  detail: { index: number; field: string | null; message: string },
+  sections: SectionValue[]
+): string {
+  if (detail.index < 0) {
+    return detail.message;
+  }
+
+  const section = sections[detail.index];
+  const label = section
+    ? sectionLabel(section.section_key)
+    : `Section ${detail.index + 1}`;
+  const field = detail.field ? SECTION_FIELD_LABELS[detail.field] ?? detail.field : null;
+
+  return field
+    ? `${label} - ${field}: ${detail.message}`
+    : `${label}: ${detail.message}`;
+}
+
+function apiSectionErrorMessage(error: unknown, sections: SectionValue[]): string {
+  const apiErrors = extractApiErrors(error);
+  const sectionError = Object.entries(apiErrors).find(([key]) => key.startsWith('sections.'));
+
+  if (!sectionError) {
+    return getErrorMessage(error);
+  }
+
+  const [path, message] = sectionError;
+  if (/^[^:]+(?: - [^:]+)?: /.test(message)) {
+    return message;
+  }
+
+  const match = path.match(/^sections\.(\d+)(?:\.([a-z_]+))?/);
+  if (!match) {
+    return message;
+  }
+
+  return formatSectionError({
+    index: Number(match[1]),
+    field: match[2] ?? null,
+    message,
+  }, sections);
+}
+
 function SectionEditor({
   section,
   index,
   control,
   register,
   setValue,
+  error,
 }: {
   section: SectionValue;
   index: number;
   control: ReturnType<typeof useForm<FormValues>>['control'];
   register: ReturnType<typeof useForm<FormValues>>['register'];
   setValue: ReturnType<typeof useForm<FormValues>>['setValue'];
+  error?: unknown;
 }) {
   const label = sectionLabel(section.section_key);
   const fieldId = `section-${index}-content`;
+  const contentError = fieldError(error, 'content');
+  const mediaError = fieldError(error, 'media_id') ?? fieldError(error, 'media');
+  const sectionMessage = !contentError && !mediaError ? errorMessage(error) : null;
 
   if (section.section_type === 'rich_text') {
     return (
@@ -123,6 +327,8 @@ function SectionEditor({
             />
           )}
         />
+        {contentError && <p className="font-body text-xs text-red-600" role="alert">{contentError}</p>}
+        {sectionMessage && <p className="font-body text-xs text-red-600" role="alert">{sectionMessage}</p>}
       </div>
     );
   }
@@ -145,6 +351,8 @@ function SectionEditor({
             />
           )}
         />
+        {mediaError && <p className="font-body text-xs text-red-600" role="alert">{mediaError}</p>}
+        {sectionMessage && <p className="font-body text-xs text-red-600" role="alert">{sectionMessage}</p>}
       </div>
     );
   }
@@ -159,11 +367,16 @@ function SectionEditor({
           id={fieldId}
           rows={5}
           autoComplete="off"
-          className={fieldClass(false) + ' font-mono text-xs'}
+          className={fieldClass(!!contentError) + ' font-mono text-xs'}
           placeholder='[{"value":"8+","label":"Years of Experience"}]'
           {...register(`sections.${index}.content`)}
         />
-        <p className="font-body text-[10px] text-taupe">JSON array of value/label objects.</p>
+        {contentError ? (
+          <p className="font-body text-xs text-red-600" role="alert">{contentError}</p>
+        ) : (
+          <p className="font-body text-[10px] text-taupe">JSON array of value/label objects.</p>
+        )}
+        {sectionMessage && <p className="font-body text-xs text-red-600" role="alert">{sectionMessage}</p>}
       </div>
     );
   }
@@ -177,9 +390,11 @@ function SectionEditor({
         id={fieldId}
         type="text"
         autoComplete="off"
-        className={fieldClass(false)}
+        className={fieldClass(!!contentError)}
         {...register(`sections.${index}.content`)}
       />
+      {contentError && <p className="font-body text-xs text-red-600" role="alert">{contentError}</p>}
+      {sectionMessage && <p className="font-body text-xs text-red-600" role="alert">{sectionMessage}</p>}
     </div>
   );
 }
@@ -190,7 +405,7 @@ function PageFormModal({ page, onClose }: { page?: AdminPage; onClose: () => voi
   const updateMut = useUpdatePage(page?.id ?? 0);
   const { data: fullPage } = useAdminPage(page?.id ?? 0);
 
-  const { register, handleSubmit, control, setValue, watch, formState: { errors, isSubmitting } } =
+  const { register, handleSubmit, control, reset, setValue, watch, formState: { errors, isSubmitting } } =
     useForm<FormValues>({
       resolver: zodResolver(schema),
       defaultValues: {
@@ -220,38 +435,40 @@ function PageFormModal({ page, onClose }: { page?: AdminPage; onClose: () => voi
       return;
     }
 
-    setValue('title', fullPage.title ?? '');
-    setValue('slug', fullPage.slug ?? '');
-    setValue('template', fullPage.template ?? '');
-    setValue('is_published', fullPage.status === 'published' ? 'true' : 'false');
-    setValue('seo_title', fullPage.seo?.meta_title ?? '');
-    setValue('seo_description', fullPage.seo?.meta_description ?? '');
-    setValue('canonical_url', fullPage.seo?.canonical_url ?? '');
-    setValue('og_title', fullPage.seo?.og_title ?? '');
-    setValue('og_description', fullPage.seo?.og_description ?? '');
-    setValue('seo_robots', fullPage.seo?.robots ?? 'index, follow');
-    setValue('schema_markup', fullPage.seo?.schema_markup ?? '');
-    setValue('og_image_id', fullPage.og_image_id ?? null);
-    setValue('og_image', fullPage.og_image ?? null);
-
     const hasStructuredSections = (fullPage.sections ?? []).some((s) => s.section_key && s.section_key !== 'body');
-    if (hasStructuredSections) {
-      setValue('sections', (fullPage.sections ?? []).map((section) => ({
+    const sections = hasStructuredSections
+      ? (fullPage.sections ?? []).map((section) => ({
         section_key: section.section_key ?? 'body',
-        section_type: section.section_type ?? 'text',
+        section_type: normalizeSectionType(section.section_type),
         title: section.title ?? null,
         content: section.content ?? '',
         media_id: section.media_id ?? null,
         media: section.media ?? null,
-        settings: section.settings ?? {},
+        settings: normalizeSectionSettings(section.settings),
         sort_order: section.sort_order ?? 0,
-      })));
-    } else {
-      setValue('body', fullPage.sections?.[0]?.content ?? fullPage.body ?? '');
-    }
+      }))
+      : [];
+
+    reset({
+      title: fullPage.title ?? '',
+      slug: fullPage.slug ?? '',
+      body: hasStructuredSections ? '' : (fullPage.sections?.[0]?.content ?? fullPage.body ?? ''),
+      template: fullPage.template ?? '',
+      is_published: fullPage.status === 'published' ? 'true' : 'false',
+      seo_title: fullPage.seo?.meta_title ?? '',
+      seo_description: fullPage.seo?.meta_description ?? '',
+      canonical_url: fullPage.seo?.canonical_url ?? '',
+      og_title: fullPage.seo?.og_title ?? '',
+      og_description: fullPage.seo?.og_description ?? '',
+      og_image_id: fullPage.og_image_id ?? null,
+      og_image: fullPage.og_image ?? null,
+      seo_robots: fullPage.seo?.robots ?? 'index, follow',
+      schema_markup: fullPage.seo?.schema_markup ?? '',
+      sections,
+    });
 
     setLoaded(true);
-  }, [fullPage, isEdit, loaded, setValue]);
+  }, [fullPage, isEdit, loaded, reset]);
 
   const title = watch('title');
   const slug = watch('slug');
@@ -269,6 +486,7 @@ function PageFormModal({ page, onClose }: { page?: AdminPage; onClose: () => voi
           content: section.content || null,
           title: section.title || null,
           media_id: section.media_id ?? media?.id ?? null,
+          settings: normalizeSectionSettings(section.settings),
           sort_order: Number(section.sort_order ?? 0),
         }))
       : undefined;
@@ -300,11 +518,25 @@ function PageFormModal({ page, onClose }: { page?: AdminPage; onClose: () => voi
       }
       onClose();
     } catch (err) {
-      toast.error(getErrorMessage(err));
+      toast.error(apiSectionErrorMessage(err, values.sections ?? []));
     }
   };
 
+  const onInvalid = (formErrors: FieldErrors<FormValues>) => {
+    if (formErrors.sections) {
+      const sections = watch('sections') ?? [];
+      const detail = firstSectionError(formErrors.sections);
+      toast.error(detail
+        ? formatSectionError(detail, sections)
+        : 'Please check the page sections before saving.');
+      return;
+    }
+
+    toast.error('Please fix the highlighted page fields before saving.');
+  };
+
   const hasStructuredSections = fields.length > 0;
+  const isSaving = isSubmitting || createMut.isPending || updateMut.isPending;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -312,7 +544,7 @@ function PageFormModal({ page, onClose }: { page?: AdminPage; onClose: () => voi
       <div className="relative bg-white rounded-2xl shadow-soft w-full max-w-3xl p-6 max-h-[92vh] overflow-y-auto">
         <h2 className="font-display text-xl text-charcoal mb-5">{isEdit ? 'Edit' : 'New'} Page</h2>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-4">
           <FormField label="Title" htmlFor="page-title" error={errors.title?.message} required>
             <input
               id="page-title"
@@ -351,6 +583,7 @@ function PageFormModal({ page, onClose }: { page?: AdminPage; onClose: () => voi
                   control={control}
                   register={register}
                   setValue={setValue}
+                  error={sectionErrorAt(errors.sections, index)}
                 />
               ))}
             </div>
@@ -456,16 +689,17 @@ function PageFormModal({ page, onClose }: { page?: AdminPage; onClose: () => voi
             <button
               type="button"
               onClick={onClose}
+              disabled={isSaving}
               className="px-4 py-2 text-sm font-body text-charcoal border border-cream rounded-lg hover:bg-ivory-warm"
             >
               Cancel
             </button>
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSaving}
               className="px-4 py-2 text-sm font-body bg-bronze text-ivory rounded-lg hover:bg-bronze-light disabled:opacity-60"
             >
-              {isSubmitting ? 'Saving...' : 'Save'}
+              {isSaving ? 'Saving...' : 'Save'}
             </button>
           </div>
         </form>

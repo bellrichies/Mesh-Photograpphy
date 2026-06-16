@@ -13,11 +13,13 @@ use App\Models\User;
 use App\Models\UserRefreshToken;
 use App\Services\JwtService;
 use App\Services\AuthorizationService;
+use App\Services\ActivityLogService;
 
 class AuthController extends Controller
 {
     private JwtService $jwtService;
     private User $userModel;
+    private ActivityLogService $activityLog;
 
     public function __construct()
     {
@@ -27,6 +29,7 @@ class AuthController extends Controller
         $authz           = new AuthorizationService($db);
         $this->userModel = $userModel;
         $this->jwtService = new JwtService(app_jwt(), $userModel, $tokenModel, $authz);
+        $this->activityLog = new ActivityLogService($db);
     }
 
     public function login(Request $request, Response $response): Response
@@ -44,10 +47,24 @@ class AuthController extends Controller
         $user = $this->userModel->findByEmail($data['email']);
 
         if (!$user || !$this->userModel->verifyPassword($data['password'], $user['password'])) {
+            $this->activityLog->recordAuthEvent(
+                $request,
+                'failed_login',
+                $user ?: null,
+                'Failed admin login attempt.',
+                ['email' => $data['email'], 'reason' => 'invalid_credentials']
+            );
             throw new HttpException(401, 'Invalid email or password');
         }
 
         if (($user['status'] ?? '') !== 'active') {
+            $this->activityLog->recordAuthEvent(
+                $request,
+                'failed_login',
+                $user,
+                'Failed admin login attempt for inactive account.',
+                ['email' => $data['email'], 'reason' => 'inactive_account']
+            );
             throw new HttpException(401, 'Your account has been deactivated');
         }
 
@@ -55,6 +72,13 @@ class AuthController extends Controller
         $this->jwtService->setRefreshCookie($tokens['refresh_token']);
 
         $this->userModel->updateLastLogin($user['id']);
+        $this->activityLog->recordAuthEvent(
+            $request,
+            'login',
+            $user,
+            'Admin signed in.',
+            ['email' => $user['email']]
+        );
 
         return $this->success([
             'access_token' => $tokens['access_token'],
@@ -89,12 +113,21 @@ class AuthController extends Controller
     public function logout(Request $request, Response $response): Response
     {
         $rawToken = $this->jwtService->getRefreshTokenFromCookie();
+        $payload  = $request->authPayload() ?? [];
+        $user     = isset($payload['sub']) ? $this->userModel->findById((int) $payload['sub']) : null;
 
         if ($rawToken) {
             $this->jwtService->revokeRefreshToken($rawToken);
         }
 
         $this->jwtService->clearRefreshCookie();
+        $this->activityLog->recordAuthEvent(
+            $request,
+            'logout',
+            $user,
+            'Admin signed out.',
+            ['email' => $user['email'] ?? ($payload['email'] ?? null)]
+        );
 
         return $this->success(null, 'Logged out successfully');
     }

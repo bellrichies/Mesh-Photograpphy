@@ -81,7 +81,7 @@ export default function BlogPage() {
       <PageMeta title="Blog" description="Photography tips, stories, and inspiration." />
 
       <div className="pt-24 pb-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           {/* Header */}
           <div className="text-center mb-14">
             <p className="font-body text-xs tracking-widest uppercase text-bronze mb-3">Journal</p>

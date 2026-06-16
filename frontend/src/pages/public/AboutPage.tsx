@@ -3,12 +3,16 @@ import { Camera, Heart, Eye, Award } from 'lucide-react';
 import PageMeta from '@/components/ui/PageMeta';
 import { useCmsPage } from '@/api/pages';
 import { useTestimonials } from '@/api/testimonials';
+import { useTeamMembers } from '@/api/team';
+import { useClients } from '@/api/clients';
 import { usePublicSettings } from '@/api/settings';
+import TeamSection from '@/components/public/TeamSection';
+import ClientsSection from '@/components/public/ClientsSection';
 import { cn } from '@/utils/cn';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import DOMPurify from 'dompurify';
 import StarRating from '@/components/public/StarRating';
-import type { PageSection } from '@/types/models';
+import type { MediaRecord, PageSection } from '@/types/models';
 
 // ── Static fallbacks ──────────────────────────────────────────────────────────
 
@@ -36,6 +40,10 @@ function useSection(sections: PageSection[], key: string): string | null {
   return getSection(sections, key)?.content ?? null;
 }
 
+function getSectionMedia(sections: PageSection[], key: string): MediaRecord | null {
+  return getSection(sections, key)?.media ?? null;
+}
+
 function safe(html: string | null): string {
   return html ? DOMPurify.sanitize(html) : '';
 }
@@ -58,15 +66,46 @@ function SectionReveal({ children, className = '' }: { children: React.ReactNode
   );
 }
 
+function AboutImageFrame({
+  media,
+  alt,
+  className = '',
+  imageClassName = '',
+  loading = 'lazy',
+}: {
+  media: MediaRecord;
+  alt: string;
+  className?: string;
+  imageClassName?: string;
+  loading?: 'eager' | 'lazy';
+}) {
+  return (
+    <div className={cn('relative overflow-hidden bg-charcoal', className)}>
+      <img
+        src={media.url}
+        alt={media.alt_text ?? alt}
+        className={cn('absolute inset-0 h-full w-full object-cover object-center', imageClassName)}
+        loading={loading}
+        width={media.width ?? 900}
+        height={media.height ?? 1100}
+        decoding="async"
+      />
+    </div>
+  );
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function AboutPage() {
   const { data: page, isLoading } = useCmsPage('about');
   const { data: testimonials }    = useTestimonials();
+  const { data: teamMembers }     = useTeamMembers();
+  const { data: clients }         = useClients();
   const { data: settings }        = usePublicSettings();
 
   const sections = page?.sections ?? [];
   const siteName = settings?.site.name ?? 'Mesh Photography';
+  const pageSeo = page?.seo;
 
   // CMS fields with fallbacks
   const heroTitle       = useSection(sections, 'hero_title')    || page?.title || 'About Us';
@@ -84,7 +123,12 @@ export default function AboutPage() {
   const clientsBody     = useSection(sections, 'clients_body');
   const ctaHeading      = useSection(sections, 'cta_heading')  || "Let's create something lasting together";
   const ctaBody         = useSection(sections, 'cta_body')     || "Whether you have a clear vision or you're starting from scratch, we're here to guide you every step of the way.";
-  const heroImage       = getSection(sections, 'hero_image')?.media?.url ?? null;
+  const heroMedia       = getSectionMedia(sections, 'hero_image');
+  const storyImage      = getSectionMedia(sections, 'story_image');
+  const missionImage    = getSectionMedia(sections, 'mission_image');
+  const visionImage     = getSectionMedia(sections, 'vision_image');
+  const approachImage   = getSectionMedia(sections, 'approach_image');
+  const heroImage       = heroMedia?.url ?? pageSeo?.og_image_url ?? null;
 
   // Stats: try JSON section, then fall back to defaults
   let stats = DEFAULT_STATS;
@@ -97,13 +141,11 @@ export default function AboutPage() {
   const legacyBody = sections.find((s) => s.section_key === 'body')?.content ?? null;
   const effectiveStoryBody = storyBody ?? legacyBody;
 
-  const pageSeo = page?.seo;
-
   if (isLoading) {
     return (
       <div className="pt-24">
         <div className="h-[40vh] bg-cream animate-pulse" />
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-20 space-y-4">
+        <div className="site-container-readable py-20 space-y-4">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="h-4 bg-cream rounded animate-pulse" style={{ width: `${50 + (i % 4) * 12}%` }} />
           ))}
@@ -125,14 +167,19 @@ export default function AboutPage() {
         {heroImage ? (
           <img
             src={heroImage}
-            alt=""
+            alt={heroMedia?.alt_text ?? ''}
             className="absolute inset-0 w-full h-full object-cover"
             loading="eager"
             fetchpriority="high"
           />
         ) : null}
-        <div className="absolute inset-0 bg-gradient-to-br from-charcoal via-espresso to-charcoal opacity-90" />
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+        <div className={cn(
+          'absolute inset-0',
+          heroImage
+            ? 'bg-gradient-to-br from-charcoal/80 via-espresso/55 to-charcoal/75'
+            : 'bg-gradient-to-br from-charcoal via-espresso to-charcoal opacity-90'
+        )} />
+        <div className="relative z-10 site-container py-8 sm:py-10">
           <p className="font-body text-xs tracking-[0.2em] uppercase text-bronze mb-3">About Us</p>
           <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl text-ivory font-light leading-[1.05] max-w-2xl">
             {heroTitle}
@@ -143,7 +190,7 @@ export default function AboutPage() {
 
       {/* ── Stats bar ────────────────────────────────────────────────────── */}
       <div className="bg-charcoal">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-charcoal-light">
             {stats.map(({ value, label }) => (
               <div key={label} className="py-5 sm:py-6 px-4 text-center">
@@ -157,7 +204,7 @@ export default function AboutPage() {
 
       {/* ── Brand Story ──────────────────────────────────────────────────── */}
       <section className="bg-ivory py-20 lg:py-28">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <SectionReveal>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
               <div>
@@ -212,14 +259,22 @@ export default function AboutPage() {
 
               {/* Visual accent */}
               <div className="relative hidden lg:block">
-                <div className="aspect-[4/5] bg-charcoal/5 relative overflow-hidden">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center opacity-10">
-                      <Camera size={80} className="text-charcoal mx-auto mb-4" />
-                      <p className="font-display text-2xl text-charcoal">Since 2018</p>
+                {storyImage ? (
+                  <AboutImageFrame
+                    media={storyImage}
+                    alt={storyHeading}
+                    className="aspect-[4/5]"
+                  />
+                ) : (
+                  <div className="aspect-[4/5] bg-charcoal/5 relative overflow-hidden">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-center opacity-10">
+                        <Camera size={80} className="text-charcoal mx-auto mb-4" />
+                        <p className="font-display text-2xl text-charcoal">Since 2018</p>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
                 <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-bronze/10 border border-bronze/20" />
                 <div className="absolute -top-6 -right-6 w-20 h-20 bg-charcoal/5 border border-charcoal/10" />
               </div>
@@ -228,41 +283,23 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {(teamBody || clientsBody) && (
-        <section className="bg-ivory py-16 lg:py-20 border-t border-cream">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <SectionReveal>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                {teamBody && (
-                  <div>
-                    <span className="font-body text-xs tracking-[0.18em] uppercase text-taupe block mb-4">Team</span>
-                    <h2 className="font-display text-3xl lg:text-4xl text-charcoal font-light mb-5">{teamHeading}</h2>
-                    <div
-                      className="prose max-w-none font-body text-taupe text-sm leading-relaxed"
-                      dangerouslySetInnerHTML={{ __html: safe(teamBody) }}
-                    />
-                  </div>
-                )}
+      {/* ── Team ─────────────────────────────────────────────────────────── */}
+      <TeamSection
+        members={teamMembers ?? []}
+        heading={teamHeading}
+        intro={teamBody}
+      />
 
-                {clientsBody && (
-                  <div>
-                    <span className="font-body text-xs tracking-[0.18em] uppercase text-taupe block mb-4">Clients</span>
-                    <h2 className="font-display text-3xl lg:text-4xl text-charcoal font-light mb-5">{clientsHeading}</h2>
-                    <div
-                      className="prose max-w-none font-body text-taupe text-sm leading-relaxed"
-                      dangerouslySetInnerHTML={{ __html: safe(clientsBody) }}
-                    />
-                  </div>
-                )}
-              </div>
-            </SectionReveal>
-          </div>
-        </section>
-      )}
+      {/* ── Clients ──────────────────────────────────────────────────────── */}
+      <ClientsSection
+        clients={clients ?? []}
+        heading={clientsHeading}
+        intro={clientsBody}
+      />
 
       {/* ── Mission & Vision ─────────────────────────────────────────────── */}
       <section className="bg-sand py-20 lg:py-28">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <SectionReveal>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
               <div className="bg-ivory p-10 border border-cream">
@@ -303,13 +340,32 @@ export default function AboutPage() {
                 )}
               </div>
             </div>
+
+            {(missionImage || visionImage) && (
+              <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-10">
+                {missionImage && (
+                  <AboutImageFrame
+                    media={missionImage}
+                    alt={missionHeading}
+                    className="aspect-[4/3]"
+                  />
+                )}
+                {visionImage && (
+                  <AboutImageFrame
+                    media={visionImage}
+                    alt={visionHeading}
+                    className="aspect-[4/3]"
+                  />
+                )}
+              </div>
+            )}
           </SectionReveal>
         </div>
       </section>
 
       {/* ── Core Values ──────────────────────────────────────────────────── */}
       <section className="bg-ivory py-20 lg:py-28">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <SectionReveal>
             <div className="text-center mb-14">
               <span className="font-body text-xs tracking-[0.18em] uppercase text-taupe block mb-3">What Guides Us</span>
@@ -332,7 +388,7 @@ export default function AboutPage() {
 
       {/* ── Approach ─────────────────────────────────────────────────────── */}
       <section className="bg-charcoal py-20 lg:py-28">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="site-container">
           <SectionReveal>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
               <div>
@@ -365,13 +421,22 @@ export default function AboutPage() {
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                {['Before', 'During', 'Editing', 'Delivery'].map((step, i) => (
-                  <div key={step} className="p-6 border border-charcoal-light">
-                    <p className="font-body text-xs text-bronze tracking-widest mb-2">0{i + 1}</p>
-                    <p className="font-display text-xl text-ivory">{step}</p>
-                  </div>
-                ))}
+              <div className="space-y-4">
+                {approachImage && (
+                  <AboutImageFrame
+                    media={approachImage}
+                    alt="Our photography approach"
+                    className="aspect-[4/5]"
+                  />
+                )}
+                <div className="grid grid-cols-2 gap-4">
+                  {['Before', 'During', 'Editing', 'Delivery'].map((step, i) => (
+                    <div key={step} className="p-6 border border-charcoal-light">
+                      <p className="font-body text-xs text-bronze tracking-widest mb-2">0{i + 1}</p>
+                      <p className="font-display text-xl text-ivory">{step}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </SectionReveal>
@@ -381,7 +446,7 @@ export default function AboutPage() {
       {/* ── Testimonials excerpt ──────────────────────────────────────────── */}
       {testimonials && testimonials.length > 0 && (
         <section className="bg-sand py-20 lg:py-28">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="site-container">
             <SectionReveal>
               <div className="text-center mb-12">
                 <span className="font-body text-xs tracking-[0.18em] uppercase text-taupe block mb-3">Client Words</span>
@@ -394,11 +459,23 @@ export default function AboutPage() {
                     <blockquote className="font-display text-lg text-charcoal font-light leading-snug mt-4 mb-5">
                       &ldquo;{t.body}&rdquo;
                     </blockquote>
-                    <div>
-                      <p className="font-body text-sm font-medium text-charcoal">{t.client_name}</p>
-                      {t.client_role && (
-                        <p className="font-body text-xs text-taupe">{t.client_role}</p>
+                    <div className="flex items-center gap-3">
+                      {t.portrait && (
+                        <img
+                          src={t.portrait.thumb_url ?? t.portrait.url}
+                          alt={t.portrait.alt_text ?? t.client_name}
+                          className="h-11 w-11 rounded-full object-cover border border-cream"
+                          width={44}
+                          height={44}
+                          loading="lazy"
+                        />
                       )}
+                      <div>
+                        <p className="font-body text-sm font-medium text-charcoal">{t.client_name}</p>
+                        {t.client_role && (
+                          <p className="font-body text-xs text-taupe">{t.client_role}</p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -410,7 +487,7 @@ export default function AboutPage() {
 
       {/* ── CTA ──────────────────────────────────────────────────────────── */}
       <section className="bg-ivory py-20 lg:py-28">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="site-container-readable text-center">
           <SectionReveal>
             <span className="font-body text-xs tracking-[0.18em] uppercase text-taupe block mb-4">
               Start the Conversation

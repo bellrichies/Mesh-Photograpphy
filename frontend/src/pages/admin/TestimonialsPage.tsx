@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Plus, Pencil, Trash2, Star } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
@@ -17,13 +17,22 @@ import DataTable, { type Column } from '@/components/admin/DataTable';
 import StatusBadge from '@/components/admin/StatusBadge';
 import ConfirmDialog from '@/components/admin/ConfirmDialog';
 import FormField, { fieldClass } from '@/components/admin/FormField';
+import MediaPicker from '@/components/admin/MediaPicker';
 import { getErrorMessage } from '@/utils/api-errors';
+import type { MediaRecord } from '@/types/models';
+
+const nullableNumber = z.preprocess(
+  (value) => (value === '' || value === undefined ? null : value),
+  z.coerce.number().int().nullable()
+);
 
 const schema = z.object({
   client_name: z.string().min(1, 'Name is required'),
   client_role: z.string().optional(),
   body:        z.string().min(1, 'Body is required'),
   rating:      z.coerce.number().min(1).max(5),
+  portrait_id: nullableNumber.optional(),
+  portrait:    z.custom<MediaRecord | null>().nullable().optional(),
   status:      z.enum(['draft', 'published']),
   sort_order:  z.coerce.number().int().optional(),
 });
@@ -37,7 +46,7 @@ function TestimonialModal({
   const createMutation = useCreateTestimonial();
   const updateMutation = useUpdateTestimonial(testimonial?.id ?? 0);
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } =
+  const { register, handleSubmit, control, setValue, formState: { errors, isSubmitting } } =
     useForm<FormValues>({
       resolver: zodResolver(schema),
       defaultValues: {
@@ -45,6 +54,8 @@ function TestimonialModal({
         client_role: testimonial?.client_role ?? '',
         body:        testimonial?.body ?? '',
         rating:      testimonial?.rating ?? 5,
+        portrait_id: testimonial?.portrait_id ?? null,
+        portrait:    testimonial?.portrait ?? null,
         status:      testimonial?.status ?? 'draft',
         sort_order:  testimonial?.sort_order ?? 0,
       },
@@ -56,6 +67,7 @@ function TestimonialModal({
       client_role: values.client_role || null,
       body:        values.body,
       rating:      values.rating,
+      portrait_id: values.portrait_id ?? values.portrait?.id ?? null,
       status:      values.status,
       sort_order:  values.sort_order ?? 0,
     };
@@ -69,7 +81,7 @@ function TestimonialModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-soft w-full max-w-lg p-6">
+      <div className="relative bg-white rounded-2xl shadow-soft w-full max-w-lg p-6 max-h-[92vh] overflow-y-auto">
         <h2 className="font-display text-xl text-charcoal mb-5">{isEdit ? 'Edit' : 'Add'} Testimonial</h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <FormField label="Client Name" htmlFor="client_name" error={errors.client_name?.message} required>
@@ -81,8 +93,27 @@ function TestimonialModal({
           <FormField label="Testimonial" htmlFor="body" error={errors.body?.message} required>
             <textarea id="body" rows={4} className={fieldClass(!!errors.body)} {...register('body')} />
           </FormField>
-          <div className="grid grid-cols-3 gap-4">
-            <FormField label="Rating (1–5)" htmlFor="rating">
+          <FormField
+            label="Recipient Image"
+            hint="Optional portrait displayed with this testimonial."
+          >
+            <Controller
+              name="portrait"
+              control={control}
+              render={({ field }) => (
+                <MediaPicker
+                  value={field.value ?? null}
+                  onChange={(media) => {
+                    field.onChange(media);
+                    setValue('portrait_id', media?.id ?? null, { shouldDirty: true });
+                  }}
+                  label="Select recipient image"
+                />
+              )}
+            />
+          </FormField>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <FormField label="Rating (1-5)" htmlFor="rating">
               <input id="rating" type="number" min={1} max={5} className={fieldClass(false)} {...register('rating')} />
             </FormField>
             <FormField label="Sort Order" htmlFor="sort_order">
@@ -98,7 +129,7 @@ function TestimonialModal({
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-body text-charcoal border border-cream rounded-lg hover:bg-ivory-warm">Cancel</button>
             <button type="submit" disabled={isSubmitting} className="px-4 py-2 text-sm font-body bg-bronze text-ivory rounded-lg hover:bg-bronze-light disabled:opacity-60">
-              {isSubmitting ? 'Saving…' : 'Save'}
+              {isSubmitting ? 'Saving...' : 'Save'}
             </button>
           </div>
         </form>
@@ -127,9 +158,21 @@ export default function TestimonialsPage() {
       key: 'client',
       header: 'Client',
       render: (t) => (
-        <div>
-          <div className="font-medium text-charcoal">{t.client_name}</div>
-          {t.client_role && <div className="text-xs text-taupe">{t.client_role}</div>}
+        <div className="flex items-center gap-3">
+          {t.portrait && (
+            <img
+              src={t.portrait.thumb_url ?? t.portrait.url}
+              alt={t.portrait.alt_text ?? t.client_name}
+              className="h-10 w-10 rounded-full object-cover border border-cream"
+              width={40}
+              height={40}
+              loading="lazy"
+            />
+          )}
+          <div>
+            <div className="font-medium text-charcoal">{t.client_name}</div>
+            {t.client_role && <div className="text-xs text-taupe">{t.client_role}</div>}
+          </div>
         </div>
       ),
     },
