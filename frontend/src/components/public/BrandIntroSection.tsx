@@ -1,3 +1,4 @@
+import { type CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Calendar, Camera, Heart } from 'lucide-react';
 import { cn } from '@/utils/cn';
@@ -115,8 +116,8 @@ export default function BrandIntroSection({ settings, photos = [] }: BrandIntroS
     <section
       ref={ref}
       className={cn(
-        'relative overflow-hidden bg-[linear-gradient(180deg,#faf9f7_0%,#f4efe8_52%,#faf9f7_100%)] py-20 lg:py-28 transition-all duration-700 ease-out',
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+        'relative overflow-hidden bg-[linear-gradient(180deg,#faf9f7_0%,#f4efe8_52%,#faf9f7_100%)] py-20 lg:py-28',
+        isVisible && 'is-revealed'
       )}
     >
       <div className="absolute inset-x-0 top-0 h-px bg-bronze/20" />
@@ -126,7 +127,7 @@ export default function BrandIntroSection({ settings, photos = [] }: BrandIntroS
         <div className="grid grid-cols-1 items-center gap-14 lg:grid-cols-2 lg:gap-12 xl:gap-20">
 
           {/* Left: text content */}
-          <div>
+          <div className="reveal-up">
             {/* Eyebrow */}
             <div className="flex items-center gap-3 mb-8">
               <span className="h-px w-10 bg-bronze" />
@@ -148,14 +149,14 @@ export default function BrandIntroSection({ settings, photos = [] }: BrandIntroS
             <div className="mt-10 flex flex-wrap gap-4">
               <Link
                 to="/portfolio"
-                className="inline-flex items-center gap-2.5 bg-charcoal px-7 py-3.5 font-body text-[11px] uppercase tracking-[0.18em] text-ivory transition-colors duration-200 hover:bg-bronze"
+                className="group inline-flex items-center gap-2.5 bg-charcoal px-7 py-3.5 font-body text-[11px] uppercase tracking-[0.18em] text-ivory transition-all duration-200 hover:bg-bronze hover:-translate-y-0.5 hover:shadow-soft"
               >
                 Explore the Work
-                <ArrowRight size={14} strokeWidth={2} />
+                <ArrowRight size={14} strokeWidth={2} className="transition-transform duration-200 group-hover:translate-x-1" />
               </Link>
               <Link
                 to="/booking"
-                className="inline-flex items-center gap-2.5 border border-charcoal/30 px-7 py-3.5 font-body text-[11px] uppercase tracking-[0.18em] text-charcoal transition-colors duration-200 hover:border-bronze hover:text-bronze"
+                className="inline-flex items-center gap-2.5 border border-charcoal/30 px-7 py-3.5 font-body text-[11px] uppercase tracking-[0.18em] text-charcoal transition-all duration-200 hover:border-bronze hover:text-bronze hover:-translate-y-0.5"
               >
                 Plan a Session
               </Link>
@@ -179,7 +180,9 @@ export default function BrandIntroSection({ settings, photos = [] }: BrandIntroS
           </div>
 
           {/* Right: photo collage */}
-          <ImageStack photos={photos} fallbackText={tagline} />
+          <div className="reveal-up" style={{ '--reveal-delay': '160ms' } as CSSProperties}>
+            <ImageStack photos={photos} fallbackText={tagline} />
+          </div>
         </div>
       </div>
     </section>

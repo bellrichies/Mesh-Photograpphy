@@ -1,3 +1,4 @@
+import { type CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight } from 'lucide-react';
 import { cn } from '@/utils/cn';
@@ -42,14 +43,11 @@ export default function ServicesTeaserSection() {
   return (
     <section
       ref={ref}
-      className={cn(
-        'bg-ivory py-20 lg:py-28 transition-all duration-700 ease-out',
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
-      )}
+      className={cn('bg-ivory py-20 lg:py-28', isVisible && 'is-revealed')}
     >
       <div className="site-container">
         {/* Section header */}
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-14 lg:mb-16">
+        <div className="reveal-up flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-14 lg:mb-16">
           <div>
             <span className="font-body text-xs tracking-[0.18em] uppercase text-taupe block mb-3">
               What We Offer
@@ -70,18 +68,27 @@ export default function ServicesTeaserSection() {
         {/* Service cards grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           {displayServices.map((s, i) => (
-            <ServiceCard key={s.id} service={s} index={i} />
+            <div
+              key={s.id}
+              className="reveal-up"
+              style={{ '--reveal-delay': `${100 + i * 110}ms` } as CSSProperties}
+            >
+              <ServiceCard service={s} index={i} />
+            </div>
           ))}
         </div>
 
         {/* Bottom CTA */}
-        <div className="mt-16 pt-10 border-t border-cream flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div
+          className="reveal-up mt-16 pt-10 border-t border-cream flex flex-col sm:flex-row items-center justify-between gap-4"
+          style={{ '--reveal-delay': '240ms' } as CSSProperties}
+        >
           <p className="font-body text-sm text-taupe">
             Not sure which package fits your vision?
           </p>
           <Link
             to="/contact"
-            className="inline-block px-8 py-3 bg-charcoal text-ivory font-body text-xs tracking-[0.15em] uppercase hover:bg-bronze transition-colors duration-200"
+            className="inline-block px-8 py-3 bg-charcoal text-ivory font-body text-xs tracking-[0.15em] uppercase transition-all duration-200 hover:bg-bronze hover:-translate-y-0.5 hover:shadow-soft"
           >
             Let&apos;s Talk
           </Link>

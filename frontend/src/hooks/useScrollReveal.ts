@@ -1,15 +1,21 @@
 import { useState, useCallback, useEffect } from 'react';
 
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' &&
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 export function useScrollReveal<T extends Element = HTMLElement>(threshold = 0.15) {
   const [node, setNode] = useState<T | null>(null);
-  const [isVisible, setIsVisible] = useState(false);
+  // When the user prefers reduced motion, content is shown immediately and the
+  // CSS reduced-motion guard strips the transition — no scroll dependency.
+  const [isVisible, setIsVisible] = useState(prefersReducedMotion);
 
   // Callback ref: called by React whenever the DOM node mounts or unmounts,
   // which triggers the effect below — unlike useRef, which never changes identity.
   const ref = useCallback((el: T | null) => setNode(el), []);
 
   useEffect(() => {
-    if (!node) return;
+    if (!node || isVisible) return;
 
     // If the element is already in the viewport on mount, show it immediately.
     const rect = node.getBoundingClientRect();
@@ -20,13 +26,17 @@ export function useScrollReveal<T extends Element = HTMLElement>(threshold = 0.1
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) setIsVisible(true);
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
       },
-      { threshold }
+      // Trigger a little before the section is fully on-screen for a smoother feel.
+      { threshold, rootMargin: '0px 0px -10% 0px' }
     );
     observer.observe(node);
     return () => observer.disconnect();
-  }, [node, threshold]);
+  }, [node, threshold, isVisible]);
 
   return { ref, isVisible };
 }

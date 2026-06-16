@@ -151,27 +151,31 @@ export default function HeroCarousel({ slides, isLoading, siteName }: HeroCarous
         )}
       >
           <div className="site-container">
-          <div className="max-w-2xl">
+          {/* Keyed by slide index so the staggered entrance replays on change. */}
+          <div key={current} className="max-w-2xl">
             {slide.subtitle && (
-              <p className="font-body text-sm tracking-[0.2em] uppercase text-gold mb-4 opacity-90">
+              <p className="animate-fade-up font-body text-sm tracking-[0.2em] uppercase text-gold mb-4 opacity-90">
                 {slide.subtitle}
               </p>
             )}
-            <h1 className="font-display text-5xl lg:text-7xl text-ivory font-light leading-tight mb-6">
+            <h1
+              className="animate-fade-up font-display text-5xl lg:text-7xl text-ivory font-light leading-tight mb-6"
+              style={{ animationDelay: '0.12s' }}
+            >
               {slide.title}
             </h1>
-            <div className="flex flex-wrap gap-4">
+            <div className="animate-fade-up flex flex-wrap gap-4" style={{ animationDelay: '0.24s' }}>
               {slide.cta_label && slide.cta_url && (
                 <Link
                   to={slide.cta_url}
-                  className="px-8 py-3 bg-bronze text-ivory font-body text-sm tracking-wide hover:bg-bronze-light transition-colors duration-150"
+                  className="px-8 py-3 bg-bronze text-ivory font-body text-sm tracking-wide transition-all duration-200 hover:bg-bronze-light hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20"
                 >
                   {slide.cta_label}
                 </Link>
               )}
               <Link
                 to="/contact"
-                className="px-8 py-3 border border-ivory/60 text-ivory font-body text-sm tracking-wide hover:border-ivory hover:bg-ivory/10 transition-colors duration-150"
+                className="px-8 py-3 border border-ivory/60 text-ivory font-body text-sm tracking-wide transition-all duration-200 hover:border-ivory hover:bg-ivory/10 hover:-translate-y-0.5"
               >
                 Get in Touch
               </Link>

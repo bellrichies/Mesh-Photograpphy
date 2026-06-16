@@ -1,6 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, type CSSProperties } from 'react';
 import { Plus } from 'lucide-react';
 import { cn } from '@/utils/cn';
+import { useScrollReveal } from '@/hooks/useScrollReveal';
 import Lightbox from '@/components/ui/Lightbox';
 import type { GalleryPhoto } from '@/types/models';
 
@@ -35,6 +36,7 @@ export default function FeaturedPortfolioSection({
   isLoading,
 }: FeaturedPortfolioSectionProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const { ref, isVisible } = useScrollReveal<HTMLElement>();
 
   const openAt  = useCallback((i: number) => setLightboxIndex(i), []);
   const close   = useCallback(() => setLightboxIndex(null), []);
@@ -59,7 +61,7 @@ export default function FeaturedPortfolioSection({
 
   return (
     <>
-      <section className="bg-ivory">
+      <section ref={ref} className={cn('bg-ivory', isVisible && 'is-revealed')}>
         {/*
           Desktop (lg+): 8 columns x 2 rows = 16 tiles
           Mobile       : 3 columns x 3 rows = 9 tiles (items 9-15 hidden)
@@ -70,8 +72,9 @@ export default function FeaturedPortfolioSection({
               key={photo.id}
               onClick={() => openAt(i)}
               aria-label={`View photo ${i + 1}${photo.alt_text ? ` - ${photo.alt_text}` : ''}`}
+              style={{ '--reveal-delay': `${Math.min(i, 9) * 60}ms` } as CSSProperties}
               className={cn(
-                'group relative aspect-[3/4] overflow-hidden bg-sand block w-full border-0 p-0 text-left',
+                'reveal-up group relative aspect-[3/4] overflow-hidden bg-sand block w-full border-0 p-0 text-left',
                 // Hide items beyond the 9th on small screens
                 i >= 9 ? 'hidden lg:block' : ''
               )}

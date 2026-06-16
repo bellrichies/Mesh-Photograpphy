@@ -1,3 +1,4 @@
+import { type CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { cn } from '@/utils/cn';
@@ -105,13 +106,10 @@ export default function BlogStoriesSection({ posts, isLoading }: BlogStoriesSect
   return (
     <section
       ref={ref}
-      className={cn(
-        'bg-parchment py-16 lg:py-24 transition-all duration-700 ease-out',
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
-      )}
+      className={cn('bg-parchment py-16 lg:py-24', isVisible && 'is-revealed')}
     >
       <div className="site-container">
-        <div className="flex items-end justify-between mb-10">
+        <div className="reveal-up flex items-end justify-between mb-10">
           <div>
             <span className="font-body text-xs tracking-[0.15em] uppercase text-taupe block mb-2">
               From the Studio
@@ -128,8 +126,14 @@ export default function BlogStoriesSection({ posts, isLoading }: BlogStoriesSect
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {posts.map((post) => (
-            <BlogPostCard key={post.id} post={post} />
+          {posts.map((post, i) => (
+            <div
+              key={post.id}
+              className="reveal-up"
+              style={{ '--reveal-delay': `${100 + i * 110}ms` } as CSSProperties}
+            >
+              <BlogPostCard post={post} />
+            </div>
           ))}
         </div>
       </div>
