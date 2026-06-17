@@ -8,6 +8,6 @@ return [
     'debug'      => (bool) env('APP_DEBUG', false),
     'url'        => env('APP_URL', 'http://localhost:8000'),
     'timezone'   => env('APP_TIMEZONE', 'UTC'),
-    'admin_path' => env('ADMIN_PATH', '/cms'),
+    'admin_path' => env('ADMIN_PATH', '/admin'),
     'settings_cache_ttl' => (int) env('APP_SETTINGS_CACHE_TTL', 300),
 ];

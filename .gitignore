@@ -12,7 +12,9 @@ Thumbs.db
 backend/.env
 backend/vendor/
 backend/storage/logs/*.log
-backend/public/uploads/
+backend/public/uploads/*
+!backend/public/uploads/.gitkeep
+!backend/public/uploads/.htaccess
 
 # ─── Frontend ────────────────────────────────────────────────────────────────
 frontend/node_modules/
@@ -27,5 +29,6 @@ app_docs/
 agent.md
 
 # ─── Misc ────────────────────────────────────────────────────────────────────
+deploy/build/
 *.log
 *.cache

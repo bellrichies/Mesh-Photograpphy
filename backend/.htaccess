@@ -1,0 +1,9 @@
+Options -Indexes
+
+RewriteEngine On
+
+# This project may live under public_html on restrictive shared hosting.
+# Block direct web access to backend source, while allowing the public
+# document root at backend/public.
+RewriteRule ^public(/|$) - [L]
+RewriteRule ^ - [F,L]

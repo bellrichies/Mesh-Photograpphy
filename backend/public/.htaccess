@@ -1,17 +1,33 @@
-Options -Indexes
-Options -MultiViews
+Options -Indexes -MultiViews
+
+DirectoryIndex index.html index.php
+
+<IfModule mod_authz_core.c>
+    Require all granted
+</IfModule>
+
+<IfModule mod_setenvif.c>
+    SetEnvIf Authorization "(.+)" HTTP_AUTHORIZATION=$1
+</IfModule>
+
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
 
 RewriteEngine On
 RewriteBase /
 
-# Allow actual files and directories to be served directly
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
+# Keep bearer tokens available on shared hosts running PHP through CGI/FastCGI.
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
-# Route everything else to index.php
-RewriteRule ^(.*)$ index.php [QSA,L]
+# Route API requests to the PHP front controller.
+RewriteCond %{REQUEST_URI} ^/api/
+RewriteRule ^ index.php [QSA,L]
 
-# Security: deny access to hidden files
-<FilesMatch "^\.">
-    Require all denied
-</FilesMatch>
+# Allow real files and directories, including built assets and uploads.
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# React router fallback for all public and admin SPA routes.
+RewriteRule ^ index.html [L]
